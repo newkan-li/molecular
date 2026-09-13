@@ -1,6 +1,6 @@
 /* 主题切换：浅色 / 护眼 / 深色，记忆在本机浏览器 */
 (function () {
-  var KEY = "cellbio_theme";
+  var KEY = "molbio_theme";
   var THEMES = [["light", "浅色"], ["sepia", "护眼"], ["dark", "深色"]];
   function get() { try { return localStorage.getItem(KEY) || "light"; } catch (e) { return "light"; } }
   function apply(t) {

@@ -11,7 +11,7 @@
     ["careless", "审题失误"],
     ["other", "其他"]
   ];
-  var PREFIX = "cellbio_";
+  var PREFIX = "molbio_";
 
   /* ---------- storage ---------- */
   function jget(k, def) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch (e) { return def; } }
@@ -1738,7 +1738,7 @@
       });
     });
     var blob = new Blob([JSON.stringify({ v: 1, all: true, data: out }, null, 1)], { type: "application/json" });
-    var a = el("a"); a.href = URL.createObjectURL(blob); a.download = "cellbio-backup-all.json"; a.click();
+    var a = el("a"); a.href = URL.createObjectURL(blob); a.download = "molbio-backup-all.json"; a.click();
   }
   function restoreAll(file) {
     var r = new FileReader();
