@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1f5c8b">
+<title>分子生物学 · 自学网页</title>
+<link rel="stylesheet" href="assets/style.css?v=20260913a">
+<script src="assets/theme.js?v=20260913a"></script>
+</head>
+<body data-page="index">
+<div class="wrap">
+  <header class="top">
+    <h1>分子生物学 · 自学网页</h1>
+    <p>朱玉贤《现代分子生物学》第5版 · 教师课件逐页详解 ｜ 概念学习 + 图注解读 + 本页要点 + 全题型练习 + 错题本 + 术语表</p>
+  </header>
+
+  <div class="notice" style="background:#fff8e8;border-color:#f0d9a8;color:#5a4a1a">
+    <b>📚 当前覆盖范围：</b>第一章 绪论（分子生物学发展历程 · 里程碑 · 研究内容与方法）——老师已发送的第一批课件。<br>
+    <b>⏳ 待更新：</b>染色体与DNA、生物信息的传递（复制/转录/翻译）、基因表达调控、分子生物学研究方法等后续章节，待老师发送课件后陆续补充。
+  </div>
+
+  <div class="notice">
+    <b>本地使用提示：</b>本页为纯本地网页。请在本目录下运行
+    <code>python3 -m http.server 8000</code>，再用浏览器打开
+    <code>http://localhost:8000/</code>。
+    （直接双击 <code>index.html</code> 也能看内容，但浏览器可能隔离各页的 localStorage，
+    导致「学习总览 / 错题本」统计不完整。）<br>
+    学习记录（作答、错题、手写、已读）保存在<b>本机浏览器 localStorage</b>，不会上传。
+    换设备或清理浏览器数据前，请用「💾 数据备份」导出文件。
+  </div>
+
+  <div class="statsbox" id="dash">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <h3 style="margin:0">🎯 今日学习</h3>
+      <a class="navbtn" style="width:auto;margin:0;text-align:center;text-decoration:none" href="review.html">🔁 开始复习</a>
+    </div>
+    <div id="dashbody" style="margin-top:8px">读取中…</div>
+  </div>
+
+  <div class="statsbox" id="planbox">
+    <h3 style="margin:0 0 8px">🎯 学习计划</h3>
+    <div id="planbody">读取中…</div>
+  </div>
+
+  <div class="cards" id="list"></div>
+
+  <div class="statsbox">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <h3 style="margin:0">📊 我的学习总览（本设备浏览器）</h3>
+      <button class="navbtn" style="width:auto;margin:0" onclick="location.reload()">↻ 刷新</button>
+    </div>
+    <div id="overview" style="font-size:13.5px;margin-top:8px">统计读取中…</div>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="navbtn" style="width:auto;margin:0" id="backupAll">💾 完整备份（全部章节）</button>
+      <button class="navbtn" style="width:auto;margin:0" id="restoreAll">⬆ 从备份恢复…</button>
+      <input id="fileAll" type="file" accept=".json" style="display:none">
+      <button class="navbtn" style="width:auto;margin:0" id="exportAll">🖨 导出全部（题目+作答）PDF</button>
+      <a class="navbtn" style="width:auto;margin:0;text-align:center;text-decoration:none" href="review.html">🔁 今日复习</a>
+      <a class="navbtn" style="width:auto;margin:0;text-align:center;text-decoration:none" href="flashcards.html?due=1">📅 今日卡片</a>
+      <a class="navbtn" style="width:auto;margin:0;text-align:center;text-decoration:none" href="flashcards.html">🃏 闪卡</a>
+      <a class="navbtn" style="width:auto;margin:0;text-align:center;text-decoration:none" href="exam.html">📝 模拟测验</a>
+      <a class="navbtn" style="width:auto;margin:0;text-align:center;text-decoration:none" href="glossary.html">📖 术语表</a>
+      <a class="navbtn" style="width:auto;margin:0;text-align:center;text-decoration:none" href="wrong.html">📕 全局错题本</a>
+    </div>
+  </div>
+
+  <footer>编者参考答案 · 仅供个人学习使用 · 逐题精讲由 AI 辅助整理</footer>
+</div>
+<script src="data/manifest.js?v=20260913a"></script>
+<script src="data/ch01.js?v=20260913a"></script>
+<script src="data/glossary.js?v=20260913a"></script>
+<script src="assets/app.js?v=20260913a"></script>
+</body>
+</html>

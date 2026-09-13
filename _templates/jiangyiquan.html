@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1f5c8b">
+<title>姜益泉《分子生物学辅导与习题集》可搜索题库</title>
+<link rel="stylesheet" href="assets/style.css?v=__VER__">
+<script src="assets/theme.js?v=__VER__"></script>
+<style>
+  .jsearch{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+  .jsearch input{flex:1;min-width:240px;padding:10px 14px;border:1px solid var(--line);border-radius:10px;font-size:15px;background:var(--bg);color:var(--ink)}
+  .jsearch button{border:1px solid var(--blue);background:var(--blue);color:#fff;border-radius:10px;padding:8px 18px;font-size:14px;cursor:pointer;font-family:inherit}
+  .jsearch button.ghost{background:transparent;color:var(--blue);border-color:var(--line)}
+  .jchap{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 4px}
+  .jchap a{font-size:12.5px;color:var(--blue);border:1px solid var(--line);background:var(--bg);border-radius:14px;padding:2px 10px;text-decoration:none}
+  .jres{border-left:4px solid var(--blue);background:var(--bg);border-radius:8px;padding:8px 12px;margin:8px 0;font-size:13.5px}
+  .jres .pg{color:var(--sub);font-size:12px;margin-bottom:2px}
+  mark{background:#ffe680;color:#222;padding:0 2px}
+  .jpage{border-top:1px dashed var(--line);padding:8px 0;margin:6px 0;font-size:13px;white-space:pre-wrap}
+  .jpage b{color:var(--blue)}
+  .jhit{background:#fffbe6}
+  .jhint{color:var(--sub);font-size:12.5px}
+  html[data-theme="dark"] .jhit{background:#3a3320}
+</style>
+</head>
+<body>
+<div class="wrap" style="max-width:1000px">
+  <header class="top">
+    <h1>姜益泉《分子生物学（第4版）辅导与习题集》可搜索题库</h1>
+    <p>OCR 文本 · 仅供个人学习参考 · 覆盖全书 17 章 + 各校考研真题</p>
+  </header>
+  <div class="notice">
+    在下面输入关键词（如「流动镶嵌模型」「判断」「南京师范大学」），可全文检索；也可点章节快速浏览。
+    <br><span class="jhint">说明：本文由扫描件 OCR 识别，可能存在少量错字/串行；建议配合原书使用。</span>
+  </div>
+  <div class="jsearch">
+    <input id="q" placeholder="输入关键词全文检索…（回车）" autocomplete="off">
+    <button id="btn">搜索</button>
+    <button id="btnClear" class="ghost">清空</button>
+    <button id="btnBrowse" class="ghost">浏览全部</button>
+  </div>
+  <div class="jchap" id="chapnav"></div>
+  <div class="jchap" id="papernav">
+    <b class="jhint">真题试卷：</b>
+    <a href="jiangyiquan.html?q=南京师范大学2010">南京师大2010</a>
+    <a href="jiangyiquan.html?q=北京师范大学2010">北京师大2010</a>
+    <a href="jiangyiquan.html?q=华东师范大学2010">华东师大2010</a>
+    <a href="jiangyiquan.html?q=浙江大学2010">浙江大学2010</a>
+    <a href="jiangyiquan.html?q=武汉大学2010年分子生物学硕士学位研究生入学考试试题（A卷）">武大2010(A)</a>
+    <a href="jiangyiquan.html?q=武汉大学2010年分子生物学硕士学位研究生入学考试试题（B卷）">武大2010(B)</a>
+    <a href="jiangyiquan.html?q=武汉大学2011年分子生物学硕士学位研究生入学考试试题">武大2011</a>
+    <a href="jiangyiquan.html?q=武汉大学2012年分子生物学硕士学位研究生入学考试试题（A卷）">武大2012(A)</a>
+    <a href="jiangyiquan.html?q=武汉大学2012年分子生物学硕士学位研究生入学考试试题（B卷）">武大2012(B)</a>
+    <a href="jiangyiquan.html?q=武汉大学2013年分子生物学博士学位研究生入学考试试题">武大2013(博)</a>
+  </div>
+  <div id="status" class="jhint"></div>
+  <div id="results"></div>
+  <div id="browse" style="display:none"></div>
+  <footer>仅供个人学习使用 · OCR 由本地工具生成</footer>
+</div>
+<script src="data/jiangyiquan.js?v=__VER__"></script>
+<script>
+(function(){
+  var J = window.JYQ || {pages:[],chapters:[]};
+  function esc(s){return String(s).replace(/[&<>"]/g,function(m){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[m];});}
+  function hi(s,q){ if(!q) return esc(s); var i=esc(s).toLowerCase().indexOf(esc(q).toLowerCase()); if(i<0) return esc(s);
+    return esc(s).substring(0,i)+"<mark>"+esc(s).substr(i,q.length)+"</mark>"+esc(s).substring(i+q.length); }
+  var chapnav=document.getElementById("chapnav");
+  J.chapters.forEach(function(c){
+    var a=document.createElement("a"); a.href="#"; a.textContent="第"+c.num+"章 "+c.title;
+    a.onclick=function(e){e.preventDefault(); jumpPage(c.p);};
+    chapnav.appendChild(a);
+  });
+  function jumpPage(p){
+    showBrowse();
+    var el=document.getElementById("jp"+p); if(el){el.scrollIntoView({behavior:"smooth"}); el.classList.add("jhit"); setTimeout(function(){el.classList.remove("jhit");},2000);}
+  }
+  var results=document.getElementById("results"), status=document.getElementById("status"), browse=document.getElementById("browse");
+  function search(){
+    var q=document.getElementById("q").value.trim();
+    browse.style.display="none"; results.style.display="block";
+    if(!q){ results.innerHTML=""; status.textContent=""; return; }
+    var ql=q.toLowerCase(), hits=[];
+    J.pages.forEach(function(pg){
+      pg.lines.forEach(function(ln){
+        if(ln.toLowerCase().indexOf(ql)>=0) hits.push({p:pg.p,line:ln});
+      });
+    });
+    status.textContent="共 "+hits.length+" 条命中"+(hits.length>400?"（仅显示前 400 条，请细化关键词）":"");
+    var html="";
+    hits.slice(0,400).forEach(function(h){
+      html+='<div class="jres"><div class="pg">PDF 第 '+h.p+' 页</div>'+hi(h.line,q)+'</div>';
+    });
+    results.innerHTML=html || '<p class="jhint">未找到，换个关键词试试。</p>';
+  }
+  function showBrowse(){
+    results.style.display="none"; browse.style.display="block";
+    if(browse.dataset.done) return;
+    var html="";
+    J.pages.forEach(function(pg){
+      if(!pg.lines.length) return;
+      html+='<div class="jpage" id="jp'+pg.p+'"><b>PDF 第 '+pg.p+' 页</b>\n'+pg.lines.map(esc).join("\n")+'</div>';
+    });
+    browse.innerHTML=html; browse.dataset.done="1";
+  }
+  document.getElementById("btn").onclick=search;
+  document.getElementById("q").addEventListener("keydown",function(e){if(e.key==="Enter")search();});
+  document.getElementById("btnClear").onclick=function(){document.getElementById("q").value="";search();};
+  document.getElementById("btnBrowse").onclick=showBrowse;
+  status.textContent="数据已载入："+J.pages.length+" 页，"+J.chapters.length+" 个章节标记。";
+  var initQ=new URLSearchParams(location.search).get("q");
+  if(initQ){ document.getElementById("q").value=initQ; search(); }
+})();
+</script>
+</body>
+</html>

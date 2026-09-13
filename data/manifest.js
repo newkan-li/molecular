@@ -1,0 +1,1 @@
+window.MANIFEST=[{"id": "ch01", "title": "第一章 绪论", "sub2": "分子生物学发展史 · 里程碑 · 研究方法", "n_slides": 56, "n_q": 69}];
