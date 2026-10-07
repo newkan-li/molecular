@@ -22,7 +22,7 @@ header.top p{color:var(--sub);font-size:14px;margin:8px 0 0}
 footer{color:var(--sub);font-size:12.5px;text-align:center;margin-top:36px}
 
 /* chapter layout */
-.layout{display:flex;align-items:flex-start}
+.layout{display:flex;align-items:flex-start;max-width:1240px;margin:0 auto}
 aside{position:sticky;top:0;height:100vh;overflow:auto;width:236px;flex:0 0 236px;padding:16px 12px;background:var(--bg);border-right:1px solid var(--line)}
 aside .ttl{font-weight:700;color:var(--blue);padding:4px 10px 10px;font-size:14px}
 aside a{display:block;padding:6px 10px;border-radius:8px;color:var(--blue);text-decoration:none;font-size:13px;margin:2px 0}
