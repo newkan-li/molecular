@@ -77,6 +77,12 @@ table.tbl{border-collapse:collapse;width:100%;margin:.5em 0 1em;font-size:14px}
 .previewbox .pv-q{font-weight:700;color:#1e7a45;font-size:13px;margin-bottom:2px}
 .previewbox ol{margin:0;padding-left:20px}
 .previewbox li{font-size:13px;color:#2a3b33;margin:3px 0}
+.previewbox details.sol{background:#fff;border-color:#b7e3c9;padding:4px 10px;margin:4px 0 2px}
+.previewbox details.sol .ansbox{background:#f2fbf5;border-color:#c9ead6;color:#254a36;margin:6px 0 2px}
+html[data-theme="dark"] .previewbox details.sol{background:#182a20;border-color:#2c4a38}
+html[data-theme="dark"] .previewbox details.sol .ansbox{background:#203528;border-color:#31543f;color:#a8d8bc}
+html[data-theme="sepia"] .previewbox details.sol{background:#f3eede;border-color:#cddcae}
+html[data-theme="sepia"] .previewbox details.sol .ansbox{background:#efe8cf;border-color:#ddcda6;color:#4a3d1f}
 html[data-theme="dark"] .previewbox{background:#182a20;border-color:#2c4a38}
 html[data-theme="dark"] .previewbox .pv-main,html[data-theme="dark"] .previewbox li{color:#a8d8bc}
 html[data-theme="dark"] .previewbox .pv-q{color:#6fd09a}

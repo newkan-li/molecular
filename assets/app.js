@@ -845,8 +845,15 @@
       var pv = el("div", "statsbox previewbox");
       pv.innerHTML = '<h3 style="margin:0 0 6px">📖 课前预习导览</h3>' +
         '<p class="pv-main">' + esc(ch.preview.main) + "</p>" +
-        '<div class="pv-q">带着这些问题去听课：</div><ol>' +
-        (ch.preview.questions || []).map(function (q) { return "<li>" + esc(q) + "</li>"; }).join("") + "</ol>";
+        '<div class="pv-q">带着这些问题去听课（先自己想一想，再点「参考答案」核对）：</div><ol>' +
+        (ch.preview.questions || []).map(function (q) {
+          if (q && typeof q === "object") {
+            return "<li>" + esc(q.q) +
+              (q.a ? '<details class="sol pv-a"><summary>参考答案</summary><div class="ansbox">' + esc(q.a) + "</div></details>" : "") +
+              "</li>";
+          }
+          return "<li>" + esc(q) + "</li>";
+        }).join("") + "</ol>";
       main.appendChild(pv);
     }
 
