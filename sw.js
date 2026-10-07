@@ -1,5 +1,5 @@
 /* 细胞生物学自学网页 · Service Worker（网络优先，离线回退缓存） */
-var CACHE = "molbio-v1";
+var CACHE = "molbio-v2";
 self.addEventListener("install", function () { self.skipWaiting(); });
 self.addEventListener("activate", function (e) { e.waitUntil(self.clients.claim()); });
 self.addEventListener("fetch", function (e) {

@@ -1,1 +1,1 @@
-window.MANIFEST=[{"id": "ch01", "title": "第一章 绪论", "sub2": "分子生物学发展史 · 里程碑 · 研究方法", "n_slides": 56, "n_q": 69}];
+window.MANIFEST=[{"id": "ch01", "title": "第一章 绪论", "sub2": "分子生物学发展史 · 里程碑 · 研究方法", "n_slides": 56, "n_q": 69}, {"id": "ch02", "title": "第二章 染色体与DNA", "sub2": "染色质 · DNA · 基因 · 基因组 · 染色体", "n_slides": 105, "n_q": 78}, {"id": "ch03", "title": "第三章 DNA的复制", "sub2": "半保留复制 · 复制酶系 · 复制方式 · 端粒", "n_slides": 100, "n_q": 79}];

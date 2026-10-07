@@ -1632,10 +1632,10 @@
     var host = document.getElementById("tbhost"); if (!host) return;
     var T = window.TEXTBOOK; if (!T) { host.innerHTML = '<p class="empty">数据未加载。</p>'; return; }
     var html = '<p class="hint">' + esc(T.source) + " ｜ " + esc(T.note) + "</p>" +
-      '<p class="hint">📌 老师第一批 5 个课件共涉及教材第 <b>1、2、3、4、5、7、8、11</b> 章（不含第 6 章）；除第 4、5 章较完整外，其余多为「部分」。</p>';
+      '<p class="hint">📌 本站目前对应教材：<b>第一章 绪论</b>、<b>第二章 染色体与DNA</b>（教师课件把第二章拆为「染色体与DNA」「DNA的复制」两次讲授，均含 §2.3 DNA的复制）。</p>';
     (T.chapters || []).forEach(function (ch) {
       html += '<div class="tb-chapter"><h3>' + esc(ch.title) + "</h3>" +
-        '<table class="tbl"><thead><tr><th>教材章节（第4版）</th><th>本站模块</th><th>页号</th><th>覆盖</th><th></th></tr></thead><tbody>';
+        '<table class="tbl"><thead><tr><th>教材章节（第5版）</th><th>本站模块</th><th>页号</th><th>覆盖</th><th></th></tr></thead><tbody>';
       (ch.maps || []).forEach(function (m) {
         var anchor = "s_" + ch.web + "_s" + m.mod + "_0";
         var cov = m.cover === "全" ? "全" : "部分";
