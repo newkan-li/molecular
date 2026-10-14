@@ -206,6 +206,7 @@
     try { document.documentElement.classList.toggle("hw-writing", !!on); } catch (e) { }
   }
   function hwInk() { try { if (document.documentElement.getAttribute("data-theme") === "dark") return "#e8eef6"; } catch (e) { } return "#1a2b45"; }
+  function hwW(e) { var pr = (e && typeof e.pressure === "number" && e.pressure > 0 && e.pressure <= 1) ? e.pressure : 0.5; return Math.max(1.1, Math.min(6.5, 2.2 * (0.45 + 1.25 * pr))); }
   function hwRedrawAll() { for (var i = 0; i < HW_CVS.length; i++) { var c = HW_CVS[i]; if (c && c._redraw && c.isConnected && c.offsetWidth) c._redraw(); } }
   function hwObserveTheme() {
     if (HW_THEME_OBS || !window.MutationObserver) return;
@@ -251,22 +252,25 @@
         if (!ensure()) return;
         var col = hwInk();
         ctx.clearRect(0, 0, RW, RH);
-        ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.lineJoin = "round";
+        ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineCap = "round"; ctx.lineJoin = "round";
         self.get(key).forEach(function (st) {
           if (!st || !st.length) return;
-          if (st.length === 1) { ctx.beginPath(); ctx.arc(st[0][0] * RW, st[0][1] * RH, 1.6, 0, 7); ctx.fill(); return; }
-          ctx.beginPath();
-          st.forEach(function (p, i) { var x = p[0] * RW, y = p[1] * RH; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
-          ctx.stroke();
+          if (st.length === 1) { ctx.beginPath(); ctx.arc(st[0][0] * RW, st[0][1] * RH, (st[0][2] || 2) / 2, 0, 7); ctx.fill(); return; }
+          for (var i = 1; i < st.length; i++) {
+            var a = st[i - 1], b = st[i];
+            ctx.lineWidth = (((a[2] || 2) + (b[2] || 2)) / 2);
+            ctx.beginPath(); ctx.moveTo(a[0] * RW, a[1] * RH); ctx.lineTo(b[0] * RW, b[1] * RH); ctx.stroke();
+          }
         });
       }
       function seg(a, b) {
         if (!ctx) return;
-        ctx.strokeStyle = hwInk(); ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.lineJoin = "round";
+        ctx.strokeStyle = hwInk(); ctx.lineCap = "round"; ctx.lineJoin = "round";
+        ctx.lineWidth = (((a[2] || 2) + (b[2] || 2)) / 2);
         ctx.beginPath(); ctx.moveTo(a[0] * RW, a[1] * RH); ctx.lineTo(b[0] * RW, b[1] * RH); ctx.stroke();
       }
-      function dotOn(p) { if (!ctx) return; ctx.fillStyle = hwInk(); ctx.beginPath(); ctx.arc(p[0] * RW, p[1] * RH, 1.6, 0, 7); ctx.fill(); }
-      function pos(e) { var p = (e.touches && e.touches[0]) || e; return [(p.clientX - rect.left) / rect.width, (p.clientY - rect.top) / rect.height]; }
+      function dotOn(p) { if (!ctx) return; ctx.fillStyle = hwInk(); ctx.beginPath(); ctx.arc(p[0] * RW, p[1] * RH, (p[2] || 2) / 2, 0, 7); ctx.fill(); }
+      function pos(e) { var p = (e.touches && e.touches[0]) || e; return [(p.clientX - rect.left) / rect.width, (p.clientY - rect.top) / rect.height, hwW(e)]; }
       function eraserOn() { return canvas.dataset.eraser === "1"; }
       function eraseAt(p) {
         self.data[key] = self.get(key).filter(function (st) {
