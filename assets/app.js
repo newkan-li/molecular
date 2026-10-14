@@ -256,18 +256,21 @@
         self.get(key).forEach(function (st) {
           if (!st || !st.length) return;
           if (st.length === 1) { ctx.beginPath(); ctx.arc(st[0][0] * RW, st[0][1] * RH, (st[0][2] || 2) / 2, 0, 7); ctx.fill(); return; }
-          for (var i = 1; i < st.length; i++) {
-            var a = st[i - 1], b = st[i];
-            ctx.lineWidth = (((a[2] || 2) + (b[2] || 2)) / 2);
-            ctx.beginPath(); ctx.moveTo(a[0] * RW, a[1] * RH); ctx.lineTo(b[0] * RW, b[1] * RH); ctx.stroke();
-          }
+          for (var i = 1; i < st.length - 1; i++) { quad(st[i - 1], st[i], st[i + 1]); }
+          tailline(st[st.length - 2], st[st.length - 1]);
         });
       }
-      function seg(a, b) {
+      function quad(a, b, c) {
         if (!ctx) return;
-        ctx.strokeStyle = hwInk(); ctx.lineCap = "round"; ctx.lineJoin = "round";
-        ctx.lineWidth = (((a[2] || 2) + (b[2] || 2)) / 2);
-        ctx.beginPath(); ctx.moveTo(a[0] * RW, a[1] * RH); ctx.lineTo(b[0] * RW, b[1] * RH); ctx.stroke();
+        var m1x = (a[0] + b[0]) / 2, m1y = (a[1] + b[1]) / 2, m2x = (b[0] + c[0]) / 2, m2y = (b[1] + c[1]) / 2;
+        ctx.strokeStyle = hwInk(); ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.lineWidth = (b[2] || 2);
+        ctx.beginPath(); ctx.moveTo(m1x * RW, m1y * RH); ctx.quadraticCurveTo(b[0] * RW, b[1] * RH, m2x * RW, m2y * RH); ctx.stroke();
+      }
+      function tailline(a, b) {
+        if (!ctx) return;
+        var mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
+        ctx.strokeStyle = hwInk(); ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.lineWidth = (((a[2] || 2) + (b[2] || 2)) / 2);
+        ctx.beginPath(); ctx.moveTo(mx * RW, my * RH); ctx.lineTo(b[0] * RW, b[1] * RH); ctx.stroke();
       }
       function dotOn(p) { if (!ctx) return; ctx.fillStyle = hwInk(); ctx.beginPath(); ctx.arc(p[0] * RW, p[1] * RH, (p[2] || 2) / 2, 0, 7); ctx.fill(); }
       function pos(e) { var p = (e.touches && e.touches[0]) || e; return [(p.clientX - rect.left) / rect.width, (p.clientY - rect.top) / rect.height, hwW(e)]; }
@@ -298,12 +301,13 @@
         for (var i = 0; i < evs.length; i++) {
           var p = pos(evs[i]);
           if (eraserOn()) { eraseAt(p); drawStrokes(); continue; }
-          if (act.cur && act.cur.length) { seg(act.cur[act.cur.length - 1], p); act.cur.push(p); }
+          if (act.cur) { var _st = act.cur; _st.push(p); var _n = _st.length; if (_n >= 3) quad(_st[_n - 3], _st[_n - 2], _st[_n - 1]); }
         }
       }
       function end(e) {
         if (!act) return;
         if (act.pid != null && e && e.pointerId != null && e.pointerId !== act.pid) return;
+        if (act.cur && act.cur.length >= 2) { try { tailline(act.cur[act.cur.length - 2], act.cur[act.cur.length - 1]); } catch (x) { } }
         act = null;
         window.removeEventListener("pointermove", move, true);
         window.removeEventListener("pointerup", end, true);
