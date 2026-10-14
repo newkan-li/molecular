@@ -196,52 +196,102 @@
   }
 
   /* ================= handwriting ================= */
+  /* 手写：矢量笔画（归一化坐标）。
+     iPad/Apple Pencil 兼容：不用 setPointerCapture，整笔用 window 级 pointermove/up 跟踪，
+     抬笔后再落笔也能写；逐段增量绘制（不再每个点全量重绘/重设画布）；保存防抖；
+     书写期锁定选区，避免弹出系统“拷贝/查询/翻译”菜单。 */
+  var HW_SAVE_T = null;
+  function hwSetWriting(on) {
+    window.__hwWriting = !!on;
+    try { document.documentElement.classList.toggle("hw-writing", !!on); } catch (e) { }
+  }
+  function hwCSS() {
+    if (document.getElementById("hwSetCSS")) return;
+    var s = document.createElement("style"); s.id = "hwSetCSS";
+    s.textContent = "html.hw-writing{-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important}";
+    document.head.appendChild(s);
+  }
   var HW = {
     data: {}, cid: null,
-    init: function (cid) { this.cid = cid; this.data = jget(skey(cid, "hw"), {}); },
+    init: function (cid) { this.cid = cid; this.data = jget(skey(cid, "hw"), {}); hwCSS(); },
     save: function () { jset(skey(this.cid, "hw"), this.data); },
     get: function (key) { return this.data[key] || []; },
     set: function (key, strokes) { this.data[key] = strokes; this.save(); },
     attach: function (canvas, key) {
       var self = this;
       canvas.dataset.key = key;
-      function draw() {
-        var dpr = window.devicePixelRatio || 1;
+      var ctx = null, dpr = 1, RW = 0, RH = 0, rect = null, act = null;
+      function ensure() {
+        dpr = window.devicePixelRatio || 1;
         var r = canvas.getBoundingClientRect();
-        if (!r.width) return;
-        canvas.width = r.width * dpr; canvas.height = r.height * dpr;
-        var ctx = canvas.getContext("2d");
+        if (!r.width) return false;
+        RW = r.width; RH = r.height;
+        var w = Math.max(1, Math.round(RW * dpr)), h = Math.max(1, Math.round(RH * dpr));
+        if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+        ctx = canvas.getContext("2d");
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        ctx.clearRect(0, 0, r.width, r.height);
-        ctx.strokeStyle = "#1a2b45"; ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.lineJoin = "round";
-        var strokes = self.get(key);
-        strokes.forEach(function (st) {
-          if (!st.length) return;
-          if (st.length === 1) { ctx.beginPath(); ctx.arc(st[0][0] * r.width, st[0][1] * r.height, 1.6, 0, 7); ctx.fill(); return; }
+        return true;
+      }
+      function drawStrokes() {
+        if (!ensure()) return;
+        ctx.clearRect(0, 0, RW, RH);
+        ctx.strokeStyle = "#1a2b45"; ctx.fillStyle = "#1a2b45"; ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.lineJoin = "round";
+        self.get(key).forEach(function (st) {
+          if (!st || !st.length) return;
+          if (st.length === 1) { ctx.beginPath(); ctx.arc(st[0][0] * RW, st[0][1] * RH, 1.6, 0, 7); ctx.fill(); return; }
           ctx.beginPath();
-          st.forEach(function (p, i) { var x = p[0] * r.width, y = p[1] * r.height; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+          st.forEach(function (p, i) { var x = p[0] * RW, y = p[1] * RH; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
           ctx.stroke();
         });
       }
-      function pos(e) { var r = canvas.getBoundingClientRect(); return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height]; }
-      var drawing = false, cur = null;
-      canvas.addEventListener("pointerdown", function (e) {
-        e.preventDefault(); canvas.setPointerCapture(e.pointerId); drawing = true;
+      function seg(a, b) {
+        if (!ctx) return;
+        ctx.strokeStyle = "#1a2b45"; ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.lineJoin = "round";
+        ctx.beginPath(); ctx.moveTo(a[0] * RW, a[1] * RH); ctx.lineTo(b[0] * RW, b[1] * RH); ctx.stroke();
+      }
+      function dotOn(p) { if (!ctx) return; ctx.fillStyle = "#1a2b45"; ctx.beginPath(); ctx.arc(p[0] * RW, p[1] * RH, 1.6, 0, 7); ctx.fill(); }
+      function pos(e) { var p = (e.touches && e.touches[0]) || e; return [(p.clientX - rect.left) / rect.width, (p.clientY - rect.top) / rect.height]; }
+      function eraserOn() { return canvas.dataset.eraser === "1"; }
+      function eraseAt(p) {
+        self.data[key] = self.get(key).filter(function (st) {
+          return !st.some(function (q) { return Math.abs(q[0] - p[0]) < 0.03 && Math.abs(q[1] - p[1]) < 0.05; });
+        });
+      }
+      function scheduleSave() { if (HW_SAVE_T) clearTimeout(HW_SAVE_T); HW_SAVE_T = setTimeout(function () { self.save(); }, 400); }
+      function down(e) {
+        if (!ensure()) return;
+        rect = canvas.getBoundingClientRect();
+        hwSetWriting(true);
+        act = { pid: (e.pointerId != null ? e.pointerId : null), cur: null };
         var p = pos(e);
-        if (canvas.dataset.eraser === "1") { self.erase(key, p); draw(); return; }
-        cur = [p]; var arr = self.get(key).slice(); arr.push(cur); self.data[key] = arr; draw();
-      });
-      canvas.addEventListener("pointermove", function (e) {
-        if (!drawing) return; e.preventDefault();
+        if (eraserOn()) { eraseAt(p); scheduleSave(); drawStrokes(); return; }
+        var cur = [p]; var arr = self.get(key).slice(); arr.push(cur); self.data[key] = arr; act.cur = cur; dotOn(p);
+        window.addEventListener("pointermove", move, true);
+        window.addEventListener("pointerup", end, true);
+        window.addEventListener("pointercancel", end, true);
+      }
+      function move(e) {
+        if (!act) return;
+        if (act.pid != null && e.pointerId != null && e.pointerId !== act.pid) return;
         var p = pos(e);
-        if (canvas.dataset.eraser === "1") { self.erase(key, p); draw(); return; }
-        cur.push(p); draw();
-      });
-      function end() { if (!drawing) return; drawing = false; cur = null; self.save(); }
-      canvas.addEventListener("pointerup", end);
-      canvas.addEventListener("pointercancel", end);
-      canvas.addEventListener("pointerleave", function () { if (drawing) end(); });
-      canvas._redraw = draw; draw();
+        if (eraserOn()) { eraseAt(p); drawStrokes(); return; }
+        if (act.cur && act.cur.length) { seg(act.cur[act.cur.length - 1], p); act.cur.push(p); }
+      }
+      function end(e) {
+        if (!act) return;
+        if (act.pid != null && e && e.pointerId != null && e.pointerId !== act.pid) return;
+        act = null;
+        window.removeEventListener("pointermove", move, true);
+        window.removeEventListener("pointerup", end, true);
+        window.removeEventListener("pointercancel", end, true);
+        hwSetWriting(false);
+        scheduleSave();
+      }
+      canvas.addEventListener("pointerdown", down);
+      canvas.addEventListener("touchstart", function (e) { try { e.preventDefault(); } catch (x) { } }, { passive: false });
+      canvas.addEventListener("touchmove", function (e) { if (act) { try { e.preventDefault(); } catch (x) { } } }, { passive: false });
+      canvas._redraw = drawStrokes;
+      drawStrokes();
     },
     erase: function (key, p) {
       var arr = this.get(key).filter(function (st) {
@@ -251,6 +301,10 @@
     },
     undo: function (key) { var arr = this.get(key); arr.pop(); this.data[key] = arr; this.save(); }
   };
+  document.addEventListener("contextmenu", function (e) { if (window.__hwWriting) { try { e.preventDefault(); } catch (x) { } } }, true);
+  document.addEventListener("selectstart", function (e) { if (window.__hwWriting) { try { e.preventDefault(); } catch (x) { } } }, true);
+  window.addEventListener("pagehide", function () { if (HW_SAVE_T) { clearTimeout(HW_SAVE_T); HW_SAVE_T = null; HW.save(); } });
+  document.addEventListener("visibilitychange", function () { if (document.hidden && HW_SAVE_T) { clearTimeout(HW_SAVE_T); HW_SAVE_T = null; HW.save(); } });
 
   function hwBox(cid, key, tall) {
     var box = el("div", "hwbox");
