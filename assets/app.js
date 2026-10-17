@@ -126,6 +126,7 @@
     o[kp] = c; jset(KPS_KEY, o);
     bumpTask("practice");
     if (typeof window.__refreshHeat === "function") window.__refreshHeat();
+    if (typeof window.__refreshStats === "function") window.__refreshStats();
   }
   /* 0~1 掌握度：正确率(0.6) + 复习强度(0.4) */
   function kpMastery(kp) {
@@ -957,6 +958,7 @@
     }
 
     var statsbox = el("div", "statsbox"); statsbox.id = "statsbox"; renderStats(cid, ch, statsbox); main.appendChild(statsbox);
+    window.__refreshStats = function () { renderStats(cid, ch, statsbox); };
     var heat = el("div", "statsbox"); heat.id = "heatmap"; renderHeatmap(cid, ch, heat); main.appendChild(heat);
 
     // concept slides
