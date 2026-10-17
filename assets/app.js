@@ -137,6 +137,31 @@
     });
     if (changed) jset(skey(cid, "ck"), ck);
   }
+  function redoBar(text, onRedo) {
+    var bar = el("div", "redobar");
+    bar.innerHTML = '<span class="hint">' + esc(text) + "</span> ";
+    var b = el("button", "navbtn", "🔁 重做"); b.style.width = "auto"; b.style.margin = "0";
+    b.onclick = onRedo; bar.appendChild(b);
+    return bar;
+  }
+  function clearQRec(cid, kind, key) { var st = jget(skey(cid, kind), {}) || {}; delete st[key]; jset(skey(cid, kind), st); }
+  function resetQuestionBox(box, optsEl, resEl, cbEl, inpEl) {
+    if (optsEl) Array.prototype.forEach.call(optsEl.querySelectorAll("button"), function (x) { x.classList.remove("sel", "right", "wrong"); });
+    if (resEl) { resEl.style.display = "none"; resEl.innerHTML = ""; }
+    if (cbEl) cbEl.style.display = "none";
+    if (inpEl) { inpEl.value = ""; inpEl.classList.remove("right", "wrong"); }
+  }
+  function cpPrior(cid, kp, q, kind) {
+    var r = ckStore(cid)[kp];
+    if (r) return { ok: (r.first !== undefined) ? r.first : (r.ok >= r.miss) };
+    if (q && q.id) {
+      if (kind === "mcq") { var a = mcqStore(cid)[q.id]; if (a) return { ok: String(a.last) === String(q.a).trim() }; }
+      else if (kind === "judge") { var b = judgeStore(cid)[q.id]; if (b) return { ok: String(b.last) === String(q.a).trim() }; }
+      else { var c = fillStore(cid)[q.id]; if (c) return { ok: fuzzyMatch(q.a, c.last) }; }
+    }
+    return null;
+  }
+
   function kpAll() { return jget(KPS_KEY, {}); }
   function kpRecord(kp, correct) {
     if (!kp) return;
@@ -426,6 +451,14 @@
     var res = el("div", "mres"); res.style.display = "none"; box.appendChild(res);
     var cb = causeBox(cid, q.id); box.appendChild(cb);
     box._cause = cb; box._res = res;
+    var _rec = mcqStore(cid)[q.id];
+    if (_rec && _rec.last != null) {
+      var _ok = String(_rec.last) === String(q.a).trim();
+      var _bar = redoBar(_ok ? "上次作答：✅ 正确" : "上次作答：❌ 错误", function () {
+        clearQRec(cid, "mcq", q.id); resetQuestionBox(box, opts, res, cb); _bar.remove();
+      });
+      box.appendChild(_bar);
+    }
     return box;
   }
 
@@ -472,6 +505,14 @@
     var res = el("div", "mres"); res.style.display = "none"; box.appendChild(res);
     var cb = causeBox(cid, q.id); box.appendChild(cb);
     box._cause = cb; box._res = res;
+    var _jr = judgeStore(cid)[q.id];
+    if (_jr && _jr.last != null) {
+      var _jok = String(_jr.last) === String(q.a).trim();
+      var _jbar = redoBar(_jok ? "上次作答：✅ 正确" : "上次作答：❌ 错误", function () {
+        clearQRec(cid, "judge", q.id); resetQuestionBox(box, opts, res, cb); _jbar.remove();
+      });
+      box.appendChild(_jbar);
+    }
     return box;
   }
   function gradeJudge(cid, q, box, chosen) {
@@ -531,6 +572,14 @@
     };
     bChk.onclick = box._check;
     bShow.onclick = function () { det.open = true; };
+    var _fr = fillStore(cid)[q.id];
+    if (_fr && _fr.last != null) {
+      var _fok = fuzzyMatch(q.a, _fr.last);
+      var _fbar = redoBar(_fok ? "上次作答：✅ 正确" : "上次作答：❌ 错误", function () {
+        clearQRec(cid, "fill", q.id); resetQuestionBox(box, null, res, cb, inp); _fbar.remove();
+      });
+      box.appendChild(_fbar);
+    }
     return box;
   }
 
@@ -917,6 +966,17 @@
       box.appendChild(inp); box.appendChild(bc);
     }
     box.appendChild(fb);
+    var prior = cpPrior(cid, kp, q, kind);
+    if (prior) {
+      var _pbar = redoBar(prior.ok ? "上次作答：✅ 正确" : "上次作答：❌ 错误", function () {
+        clearQRec(cid, "ck", kp);
+        if (q && q.id) clearQRec(cid, kind, q.id);
+        done = false;
+        resetQuestionBox(box, (kind === "mcq" ? opts : (kind === "judge" ? o2 : null)), fb, null, (kind === "fill" ? inp : null));
+        _pbar.remove();
+      });
+      box.appendChild(_pbar);
+    }
     return box;
   }
   function renderHeatmap(cid, ch, host) {
