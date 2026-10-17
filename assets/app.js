@@ -119,6 +119,24 @@
     if (ok) r.ok++; else r.miss++;
     r.last = Date.now(); s[id] = r; jset(skey(cid, "ck"), s);
   }
+  /* 回填历史「本页自测」：旧版只写掌握度；对没有正式题占用同一知识点的自测页，
+     用 kpStats 生成 ck 记录，避免重复计数。 */
+  function backfillChecks(cid, ch) {
+    if (!ch || !ch.modules) return;
+    var kps = kpAll(), ck = ckStore(cid), changed = false, formal = {};
+    ["mcq", "judge", "fill"].forEach(function (kind) { (ch[kind] || []).forEach(function (q) { if (q.kp) formal[q.kp] = 1; }); });
+    ch.modules.forEach(function (m) {
+      m.slides.forEach(function (s) {
+        if (!s.check) return;
+        var kp = cid + "_s" + m.i + "_" + s.i;
+        if (ck[kp] || formal[kp]) return;
+        var c = kps[kp]; if (!c || !c.n) return;
+        ck[kp] = { ok: c.ok || 0, miss: Math.max(0, (c.n || 0) - (c.ok || 0)), first: (c.ok > 0), last: Date.now() };
+        changed = true;
+      });
+    });
+    if (changed) jset(skey(cid, "ck"), ck);
+  }
   function kpAll() { return jget(KPS_KEY, {}); }
   function kpRecord(kp, correct) {
     if (!kp) return;
@@ -924,6 +942,7 @@
 
   function renderChapter(cid) {
     var ch = window.CHAPTERS[cid];
+    if (ch) backfillChecks(cid, ch);
     if (!ch) { document.getElementById("main").innerHTML = "<p>数据未加载。</p>"; return; }
     HW.init(cid);
     document.title = ch.title + " · 分子生物学";
