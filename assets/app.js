@@ -23,6 +23,7 @@
   function judgeStore(cid) { return jget(skey(cid, "judge"), {}); }
   function fillStore(cid) { return jget(skey(cid, "fill"), {}); }
   function selfStore(cid) { return jget(skey(cid, "self"), {}); }
+  function ckStore(cid) { return jget(skey(cid, "ck"), {}); }
   function seenStore(cid) { return jget(skey(cid, "seen"), {}); }
   function textStore(cid) { return jget(skey(cid, "text"), {}); }
   function saveText(cid, qid, val) {
@@ -112,6 +113,11 @@
     o[id] = c; jset(PREFIX + "fcans", o);
   }
 
+  function ckRecord(cid, id, ok) {
+    var s = ckStore(cid), r = s[id] || { ok: 0, miss: 0 };
+    if (ok) r.ok++; else r.miss++;
+    r.last = Date.now(); s[id] = r; jset(skey(cid, "ck"), s);
+  }
   function kpAll() { return jget(KPS_KEY, {}); }
   function kpRecord(kp, correct) {
     if (!kp) return;
@@ -567,7 +573,7 @@
     var seenN = 0; ch.modules.forEach(function (m) { m.slides.forEach(function (s) { if (seen[cid + "_s" + m.i + "_" + s.i]) seenN++; }); });
     var mc = mcqStore(cid), fi = fillStore(cid), se = selfStore(cid);
     var ok = 0, miss = 0;
-    [mc, judgeStore(cid), fi, se].forEach(function (st) { Object.keys(st).forEach(function (k) { ok += st[k].ok || 0; miss += st[k].miss || 0; }); });
+    [mc, judgeStore(cid), fi, se, ckStore(cid)].forEach(function (st) { Object.keys(st).forEach(function (k) { ok += st[k].ok || 0; miss += st[k].miss || 0; }); });
     var wb = wrongList(cid);
     return { slides: totalSlides, seen: seenN, ok: ok, miss: miss, wrong: wb.length,
              rate: (ok + miss) ? Math.round(ok * 100 / (ok + miss)) : null };
@@ -618,7 +624,7 @@
   /* ================= backup / restore ================= */
   function backupChapter(cid) {
     var out = {};
-    ["mcq", "judge", "fill", "self", "seen", "text", "wrong", "hw", "last"].forEach(function (k) {
+    ["mcq", "judge", "fill", "self", "ck", "seen", "text", "wrong", "hw", "last"].forEach(function (k) {
       var v = jget(skey(cid, k), null); if (v != null) out[skey(cid, k)] = v;
     });
     var blob = new Blob([JSON.stringify({ v: 1, cid: cid, data: out }, null, 1)], { type: "application/json" });
@@ -840,6 +846,7 @@
     function grade(correct, opts, chosenEl) {
       if (done) return; done = true;
       kpRecord(kp, correct);
+      ckRecord(cid, q.id || kp || ("ck_" + Date.now()), correct);
       if (!correct) srsRate(q.id, 0); else if (srsGet(q.id)) srsRate(q.id, 2);
       if (opts) {
         Array.prototype.forEach.call(opts.children, function (b) {
@@ -1832,7 +1839,7 @@
   function backupAll() {
     var out = {};
     (window.MANIFEST || []).forEach(function (m) {
-      ["mcq", "judge", "fill", "self", "seen", "text", "wrong", "hw", "last"].forEach(function (k) {
+      ["mcq", "judge", "fill", "self", "ck", "seen", "text", "wrong", "hw", "last"].forEach(function (k) {
         var v = jget(skey(m.id, k), null); if (v != null) out[skey(m.id, k)] = v;
       });
     });
