@@ -115,6 +115,7 @@
 
   function ckRecord(cid, id, ok) {
     var s = ckStore(cid), r = s[id] || { ok: 0, miss: 0 };
+    if (r.first === undefined) r.first = ok;
     if (ok) r.ok++; else r.miss++;
     r.last = Date.now(); s[id] = r; jset(skey(cid, "ck"), s);
   }
@@ -416,6 +417,7 @@
     var store = mcqStore(cid);
     var rec = store[q.id] || { ok: 0, miss: 0 };
     rec.last = chosen;
+    if (rec.first === undefined) rec.first = ok;
     if (ok) { rec.ok++; rec.miss = Math.max(0, rec.miss - 1); } else { rec.miss++; rec.ok = Math.max(0, rec.ok - 1); }
     store[q.id] = rec; jset(skey(cid, "mcq"), store); touch(cid);
 
@@ -460,6 +462,7 @@
     var store = judgeStore(cid);
     var rec = store[q.id] || { ok: 0, miss: 0 };
     rec.last = chosen;
+    if (rec.first === undefined) rec.first = ok;
     if (ok) { rec.ok++; rec.miss = Math.max(0, rec.miss - 1); } else { rec.miss++; rec.ok = Math.max(0, rec.ok - 1); }
     store[q.id] = rec; jset(skey(cid, "judge"), store); touch(cid);
     Array.prototype.forEach.call(box.querySelectorAll(".mopt"), function (b) {
@@ -497,6 +500,7 @@
       var ok = fuzzyMatch(q.a, inp.value);
       var store = fillStore(cid); var rec = store[q.id] || { ok: 0, miss: 0 };
       rec.last = inp.value;
+      if (rec.first === undefined) rec.first = ok;
       if (ok) { rec.ok++; rec.miss = Math.max(0, rec.miss - 1); } else { rec.miss++; rec.ok = Math.max(0, rec.ok - 1); }
       store[q.id] = rec; jset(skey(cid, "fill"), store); touch(cid);
       inp.classList.remove("right", "wrong"); inp.classList.add(ok ? "right" : "wrong");
@@ -568,16 +572,33 @@
   }
 
   /* ================= stats ================= */
+  /* 按题统计：每题最多计 1 次（优先首次作答，旧记录取最近一次）。
+     计入：章节选择/判断/填空 + 本页自测；未做的按未得分计入正确率分母。 */
   function chapterStats(cid, ch) {
+    ch = ch || { modules: [] };
     var seen = seenStore(cid);
-    var totalSlides = 0; ch.modules.forEach(function (m) { totalSlides += m.slides.length; });
-    var seenN = 0; ch.modules.forEach(function (m) { m.slides.forEach(function (s) { if (seen[cid + "_s" + m.i + "_" + s.i]) seenN++; }); });
-    var mc = mcqStore(cid), fi = fillStore(cid), se = selfStore(cid);
-    var ok = 0, miss = 0;
-    [mc, judgeStore(cid), fi, se, ckStore(cid)].forEach(function (st) { Object.keys(st).forEach(function (k) { ok += st[k].ok || 0; miss += st[k].miss || 0; }); });
+    var totalSlides = 0; (ch.modules || []).forEach(function (m) { totalSlides += m.slides.length; });
+    var seenN = 0; (ch.modules || []).forEach(function (m) { m.slides.forEach(function (s) { if (seen[cid + "_s" + m.i + "_" + s.i]) seenN++; }); });
+    var mc = mcqStore(cid), jg = judgeStore(cid), fi = fillStore(cid), se = selfStore(cid), ck = ckStore(cid);
+    var n = 0, ok = 0;
+    (ch.mcq || []).forEach(function (q) { var r = mc[q.id]; if (!r) return; n++; var g = (r.first !== undefined) ? r.first : (String(r.last) === String(q.a)); if (g) ok++; });
+    (ch.judge || []).forEach(function (q) { var r = jg[q.id]; if (!r) return; n++; var g = (r.first !== undefined) ? r.first : (String(r.last) === String(q.a)); if (g) ok++; });
+    (ch.fill || []).forEach(function (q) { var r = fi[q.id]; if (!r) return; n++; var g = (r.first !== undefined) ? r.first : fuzzyMatch(q.a, r.last); if (g) ok++; });
+    var checkTotal = 0;
+    (ch.modules || []).forEach(function (m) {
+      m.slides.forEach(function (s) {
+        if (!s.check) return; checkTotal++;
+        var kp = cid + "_s" + m.i + "_" + s.i, r = ck[kp]; if (!r) return; n++;
+        var g = (r.first !== undefined) ? r.first : (r.ok >= r.miss); if (g) ok++;
+      });
+    });
+    var cumOk = 0, cumMiss = 0;
+    [mc, jg, fi, se, ck].forEach(function (st) { Object.keys(st).forEach(function (k) { cumOk += st[k].ok || 0; cumMiss += st[k].miss || 0; }); });
     var wb = wrongList(cid);
-    return { slides: totalSlides, seen: seenN, ok: ok, miss: miss, wrong: wb.length,
-             rate: (ok + miss) ? Math.round(ok * 100 / (ok + miss)) : null };
+    var totalQ = (ch.mcq || []).length + (ch.judge || []).length + (ch.fill || []).length + checkTotal;
+    return { slides: totalSlides, seen: seenN, wrong: wb.length, answered: n, totalQ: totalQ,
+             ok: ok, miss: Math.max(0, n - ok), rate: totalQ ? Math.round(ok * 100 / totalQ) : null,
+             rateCum: (cumOk + cumMiss) ? Math.round(cumOk * 100 / (cumOk + cumMiss)) : null };
   }
 
   function renderStats(cid, ch, host) {
@@ -585,10 +606,11 @@
     host.innerHTML =
       '<h3 style="margin-top:0">📊 本章学习统计</h3>' +
       '<p><span class="pill">概念页 ' + s.seen + "/" + s.slides + '</span>' +
-      '<span class="pill">答对 ' + s.ok + '</span>' +
-      '<span class="pill">答错 ' + s.miss + '</span>' +
       '<span class="pill">正确率 ' + (s.rate == null ? "—" : s.rate + "%") + '</span>' +
-      '<span class="pill">错题本 ' + s.wrong + " 题</span></p>";
+      '<span class="pill">已作答 ' + (s.answered || 0) + "/" + (s.totalQ || 0) + ' 题</span>' +
+      '<span class="pill">累计正确率 ' + (s.rateCum == null ? "—" : s.rateCum + "%") + '</span>' +
+      '<span class="pill">错题本 ' + s.wrong + " 题</span></p>" +
+      '<p class="hint" style="margin:6px 0 0">正确率分母 = <b>本章全部客观题（选择/判断/填空）+ 本页自测</b>，<b>没做的按未得分计</b>；每题只算一次（优先首次作答，旧记录取最近一次）。</p>';
   }
 
   /* ================= wrong book (chapter drawer) ================= */
@@ -847,7 +869,7 @@
     function grade(correct, opts, chosenEl) {
       if (done) return; done = true;
       kpRecord(kp, correct);
-      ckRecord(cid, q.id || kp || ("ck_" + Date.now()), correct);
+      ckRecord(cid, kp || ("ck_" + Date.now()), correct);
       if (!correct) srsRate(q.id, 0); else if (srsGet(q.id)) srsRate(q.id, 2);
       if (opts) {
         Array.prototype.forEach.call(opts.children, function (b) {
