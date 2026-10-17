@@ -113,9 +113,10 @@
     o[id] = c; jset(PREFIX + "fcans", o);
   }
 
-  function ckRecord(cid, id, ok) {
+  function ckRecord(cid, id, ok, chosen) {
     var s = ckStore(cid), r = s[id] || { ok: 0, miss: 0 };
     if (r.first === undefined) r.first = ok;
+    if (chosen !== undefined) r.a = chosen;
     if (ok) r.ok++; else r.miss++;
     r.last = Date.now(); s[id] = r; jset(skey(cid, "ck"), s);
   }
@@ -153,11 +154,11 @@
   }
   function cpPrior(cid, kp, q, kind) {
     var r = ckStore(cid)[kp];
-    if (r) return { ok: (r.first !== undefined) ? r.first : (r.ok >= r.miss) };
+    if (r) return { ok: (r.first !== undefined) ? r.first : (r.ok >= r.miss), a: r.a };
     if (q && q.id) {
-      if (kind === "mcq") { var a = mcqStore(cid)[q.id]; if (a) return { ok: String(a.last) === String(q.a).trim() }; }
-      else if (kind === "judge") { var b = judgeStore(cid)[q.id]; if (b) return { ok: String(b.last) === String(q.a).trim() }; }
-      else { var c = fillStore(cid)[q.id]; if (c) return { ok: fuzzyMatch(q.a, c.last) }; }
+      if (kind === "mcq") { var a = mcqStore(cid)[q.id]; if (a) return { ok: String(a.last) === String(q.a).trim(), a: a.last }; }
+      else if (kind === "judge") { var b = judgeStore(cid)[q.id]; if (b) return { ok: String(b.last) === String(q.a).trim(), a: b.last }; }
+      else { var c = fillStore(cid)[q.id]; if (c) return { ok: fuzzyMatch(q.a, c.last), a: c.last }; }
     }
     return null;
   }
@@ -454,7 +455,9 @@
     var _rec = mcqStore(cid)[q.id];
     if (_rec && _rec.last != null) {
       var _ok = String(_rec.last) === String(q.a).trim();
-      var _bar = redoBar(_ok ? "上次作答：✅ 正确" : "上次作答：❌ 错误", function () {
+      Array.prototype.forEach.call(opts.children, function (b) { if (b.dataset.l === String(_rec.last)) b.classList.add(_ok ? "right" : "wrong"); });
+      var _bt = (_ok ? "上次作答：✅ 正确" : "上次作答：❌ 错误") + "（你选 " + _rec.last + "）";
+      var _bar = redoBar(_bt, function () {
         clearQRec(cid, "mcq", q.id); resetQuestionBox(box, opts, res, cb); _bar.remove();
       });
       box.appendChild(_bar);
@@ -508,7 +511,9 @@
     var _jr = judgeStore(cid)[q.id];
     if (_jr && _jr.last != null) {
       var _jok = String(_jr.last) === String(q.a).trim();
-      var _jbar = redoBar(_jok ? "上次作答：✅ 正确" : "上次作答：❌ 错误", function () {
+      Array.prototype.forEach.call(opts.children, function (b) { if (b.dataset.l === String(_jr.last)) b.classList.add(_jok ? "right" : "wrong"); });
+      var _jt = (_jok ? "上次作答：✅ 正确" : "上次作答：❌ 错误") + "（你选 " + _jr.last + "）";
+      var _jbar = redoBar(_jt, function () {
         clearQRec(cid, "judge", q.id); resetQuestionBox(box, opts, res, cb); _jbar.remove();
       });
       box.appendChild(_jbar);
@@ -575,7 +580,9 @@
     var _fr = fillStore(cid)[q.id];
     if (_fr && _fr.last != null) {
       var _fok = fuzzyMatch(q.a, _fr.last);
-      var _fbar = redoBar(_fok ? "上次作答：✅ 正确" : "上次作答：❌ 错误", function () {
+      inp.value = _fr.last; inp.classList.add(_fok ? "right" : "wrong");
+      var _ft = (_fok ? "上次作答：✅ 正确" : "上次作答：❌ 错误") + "（你填 " + _fr.last + "）";
+      var _fbar = redoBar(_ft, function () {
         clearQRec(cid, "fill", q.id); resetQuestionBox(box, null, res, cb, inp); _fbar.remove();
       });
       box.appendChild(_fbar);
@@ -933,10 +940,10 @@
       }
       return q.a != null ? String(q.a) : "";
     }
-    function grade(correct, opts, chosenEl) {
+    function grade(correct, opts, chosenEl, chosenVal) {
       if (done) return; done = true;
       kpRecord(kp, correct);
-      ckRecord(cid, kp || ("ck_" + Date.now()), correct);
+      ckRecord(cid, kp || ("ck_" + Date.now()), correct, chosenVal);
       if (!correct) srsRate(q.id, 0); else if (srsGet(q.id)) srsRate(q.id, 2);
       if (opts) {
         Array.prototype.forEach.call(opts.children, function (b) {
@@ -952,23 +959,31 @@
     if (kind === "mcq") {
       box.appendChild(el("div", "cp-q", esc(q.q)));
       var opts = el("div", "cp-opts");
-      q.o.forEach(function (o, i) { var b = el("button", "cp-opt", esc(o)); b.onclick = function () { grade(optLetter(o) === String(q.a).trim(), opts, b); }; opts.appendChild(b); });
+      q.o.forEach(function (o, i) { var b = el("button", "cp-opt", esc(o)); b.onclick = function () { grade(optLetter(o) === String(q.a).trim(), opts, b, optLetter(o)); }; opts.appendChild(b); });
       box.appendChild(opts);
     } else if (kind === "judge") {
       box.appendChild(el("div", "cp-q", esc(q.q)));
       var o2 = el("div", "cp-opts");
-      ["对", "错"].forEach(function (v) { var b = el("button", "cp-opt", v); b.onclick = function () { grade(v === q.a, o2, b); }; o2.appendChild(b); });
+      ["对", "错"].forEach(function (v) { var b = el("button", "cp-opt", v); b.onclick = function () { grade(v === q.a, o2, b, v); }; o2.appendChild(b); });
       box.appendChild(o2);
     } else {
       box.appendChild(el("div", "cp-q", esc(q.q)));
       var inp = el("input", "cp-in"); inp.placeholder = "输入答案";
-      var bc = el("button", "cp-opt", "检查"); bc.onclick = function () { grade(fuzzyMatch(q.a, inp.value)); };
+      var bc = el("button", "cp-opt", "检查"); bc.onclick = function () { grade(fuzzyMatch(q.a, inp.value), null, null, inp.value); };
       box.appendChild(inp); box.appendChild(bc);
     }
     box.appendChild(fb);
     var prior = cpPrior(cid, kp, q, kind);
     if (prior) {
-      var _pbar = redoBar(prior.ok ? "上次作答：✅ 正确" : "上次作答：❌ 错误", function () {
+      var _pt = (prior.ok ? "上次作答：✅ 正确" : "上次作答：❌ 错误") + (prior.a != null && prior.a !== "" ? "（你选 " + prior.a + "）" : "");
+      if (kind === "mcq" && opts) {
+        Array.prototype.forEach.call(opts.children, function (b) { if (optLetter(b.textContent) === String(prior.a)) b.classList.add(prior.ok ? "right" : "wrong"); });
+      } else if (kind === "judge" && o2) {
+        Array.prototype.forEach.call(o2.children, function (b) { if (b.textContent.trim() === String(prior.a)) b.classList.add(prior.ok ? "right" : "wrong"); });
+      } else if (kind === "fill" && inp) {
+        if (prior.a != null) { inp.value = prior.a; inp.classList.add(prior.ok ? "right" : "wrong"); }
+      }
+      var _pbar = redoBar(_pt, function () {
         clearQRec(cid, "ck", kp);
         if (q && q.id) clearQRec(cid, kind, q.id);
         done = false;
