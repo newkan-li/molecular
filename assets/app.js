@@ -1015,6 +1015,54 @@
     window.__refreshHeat = draw;
   }
 
+  /* ---------- 本章微课（B站） ---------- */
+  function renderVideoPanel(cid) {
+    var V = (window.MOLVIDEOS || {})[cid];
+    if (!V) return null;
+    var n = V.core.length + (V.sections || []).reduce(function (a, s) { return a + s.videos.length; }, 0);
+    if (!n) return null;
+    var box = el("div", "statsbox videobox"); box.id = "videos";
+    box.appendChild(el("h3", null, "🎬 本章微课（B站）"));
+    var vhint = "共 " + n + " 段 ｜ 按章节/考点对应 ｜ 站内播放或跳转 B 站 ｜ 需联网";
+    if (cid === "ch04") vhint += " ｜ 第4章按“实验技术”考点顺序对应方法模块";
+    box.appendChild(el("p", "hint", vhint));
+    var player = el("div", "vplayer"); player.style.display = "none";
+    player.innerHTML = '<div class="vp-h"><b id="mv-title"></b><button class="vp-close" id="mv-close">关闭</button></div><div class="vp-frame"><iframe id="mv-iframe" allowfullscreen scrolling="no" frameborder="0"></iframe></div>';
+    function play(v) {
+      player.style.display = "block";
+      document.getElementById("mv-title").textContent = v.part + " · " + v.teacher;
+      document.getElementById("mv-iframe").src = "https://player.bilibili.com/player.html?bvid=" + encodeURIComponent(v.bvid) + "&page=" + v.page + "&high_quality=1&danmaku=0&autoplay=1";
+      player.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    function card(v) {
+      var c = el("div", "videocard");
+      c.innerHTML = '<div class="vc-top"><span class="vteacher">' + esc(v.teacher) + '</span><span class="vdur">' + esc(v.dur) + '</span></div>' +
+        '<div class="vtitle">' + esc(v.part) + '</div><div class="vcourse">' + esc(v.course) + '</div>';
+      var b = el("button", "vplay", "▶ 播放"); b.onclick = function () { play(v); };
+      var a = el("a", "vlink", "B站 →"); a.href = "https://www.bilibili.com/video/" + v.bvid + "/?p=" + v.page; a.target = "_blank"; a.rel = "noopener";
+      var row = el("div", "vbtns"); row.appendChild(b); row.appendChild(a); c.appendChild(row);
+      return c;
+    }
+    var grid = el("div", "videogrid");
+    V.core.forEach(function (v) { grid.appendChild(card(v)); });
+    box.appendChild(grid);
+    if (V.sections && V.sections.length) {
+      var det = el("details", "vmore");
+      det.innerHTML = '<summary>📚 按节更多分P（' + V.sections.length + ' 组）</summary>';
+      V.sections.forEach(function (s) {
+        var g = el("div", "vsec");
+        g.appendChild(el("h4", "vsec-h", s.sec));
+        var gg = el("div", "videogrid");
+        s.videos.forEach(function (v) { gg.appendChild(card(v)); });
+        g.appendChild(gg); det.appendChild(g);
+      });
+      box.appendChild(det);
+    }
+    player.querySelector("#mv-close").onclick = function () { player.style.display = "none"; document.getElementById("mv-iframe").src = "about:blank"; };
+    box.appendChild(player);
+    return box;
+  }
+
   function renderChapter(cid) {
     var ch = window.CHAPTERS[cid];
     if (ch) backfillChecks(cid, ch);
@@ -1022,7 +1070,8 @@
     HW.init(cid);
     document.title = ch.title + " · 分子生物学";
     var aside = document.getElementById("sidebar"), main = document.getElementById("main");
-    aside.innerHTML = '<div class="ttl">' + esc(ch.title) + '</div><a href="index.html">← 返回首页</a><a href="textbook.html">📚 教材对照表</a><a href="glossary.html">📖 术语表</a><a href="review.html">🔁 今日复习</a><a href="flashcards.html?ch=' + esc(cid) + '">🃏 闪卡</a><a href="exam.html">📝 模拟测验</a>';
+    aside.innerHTML = '<div class="ttl">' + esc(ch.title) + '</div><a href="index.html">← 返回首页</a><a href="textbook.html">📚 教材对照表</a><a href="glossary.html">📖 术语表</a><a href="videos.html">🎬 视频微课索引</a><a href="review.html">🔁 今日复习</a><a href="flashcards.html?ch=' + esc(cid) + '">🃏 闪卡</a><a href="exam.html">📝 模拟测验</a>';
+    if (window.MOLVIDEOS && window.MOLVIDEOS[cid]) { var va = el("a", "", "🎬 本章微课"); va.href = "#videos"; aside.appendChild(va); }
     aside.appendChild(el("div", "grp", "各模块（概念 + 考题）"));
     ch.modules.forEach(function (m) {
       var a = el("a", "", esc(m.name)); a.href = "#m" + m.i; aside.appendChild(a);
@@ -1056,6 +1105,7 @@
     var hero = el("div", "hero");
     hero.innerHTML = "<h1>" + esc(ch.title) + '</h1><div class="tag">' + esc(ch.sub2 || "") + " ｜ 概念逐页 + 全题型练习 + 错题本 + 手写</div>";
     main.appendChild(hero);
+    var vpanel = renderVideoPanel(cid); if (vpanel) main.appendChild(vpanel);
 
     if (ch.preview) {
       var pv = el("div", "statsbox previewbox");

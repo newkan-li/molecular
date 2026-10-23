@@ -398,3 +398,30 @@ html[data-theme="dark"] .fc-card,html[data-theme="dark"] .fc-chip,html[data-them
 .redobar .hint{font-size:12px;color:#3a4a66}
 html[data-theme="dark"] .redobar{background:#1b2735;border-color:#33506b}
 html[data-theme="dark"] .redobar .hint{color:#b9c6d6}
+
+/* 本章微课 */
+.videobox{margin:14px 0}
+.videogrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:9px;margin:8px 0}
+.videocard{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:4px}
+.vc-top{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;color:var(--sub)}
+.vteacher{color:var(--acc);font-weight:600}
+.vtitle{font-size:12.5px;line-height:1.45;font-weight:600}
+.vcourse{font-size:11.5px;color:var(--sub)}
+.vbtns{display:flex;gap:8px;align-items:center;margin-top:2px;font-size:11.5px}
+.vplay{background:var(--acc);color:#fff;border:none;border-radius:14px;padding:3px 10px;font-size:11.5px;cursor:pointer}
+.vlink{font-size:11.5px}
+.vmore{margin-top:8px;border:1px solid var(--line);border-radius:10px;background:var(--card);padding:4px 12px}
+.vmore>summary{cursor:pointer;font-weight:600;color:var(--acc);padding:6px 0;font-size:13px}
+.vsec{margin:8px 0}
+.vsec-h{font-size:12.5px;color:#26506e;margin:4px 0 6px}
+.vplayer{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px;margin:10px 0}
+.vp-h{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;margin-bottom:6px}
+.vp-close{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:3px 10px;font-size:12px;cursor:pointer;color:var(--fg)}
+.vp-frame{position:relative;width:100%;height:0;padding-bottom:56.25%;background:#000;border-radius:8px;overflow:hidden}
+.vp-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+html[data-theme="dark"] .vmore{background:#1b2531;border-color:#2c3a4a}
+@media(max-width:520px){.videogrid{grid-template-columns:1fr}}
+.vtabs{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.vtab{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:6px 14px;font-size:13px;color:var(--fg);cursor:pointer}
+.vtab.on{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+.vgroup h3{font-size:16px;margin:0 0 8px;padding-bottom:6px;border-bottom:1px solid var(--line)}
