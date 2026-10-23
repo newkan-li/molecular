@@ -730,5 +730,215 @@
   "t": "聚合酶转换",
   "en": "polymerase switching",
   "d": "真核复制中Pol α被Pol δ或Pol ε替换以延伸引物的过程。"
+ },
+ {
+  "ch": "ch04",
+  "t": "凝胶电泳",
+  "en": "Gel electrophoresis",
+  "d": "在电场作用下使DNA/RNA或蛋白质通过凝胶基质，按分子大小、电荷和形状等差异进行分离的技术。"
+ },
+ {
+  "ch": "ch04",
+  "t": "琼脂糖凝胶",
+  "en": "Agarose gel",
+  "d": "由琼脂糖形成的较大孔径多孔网络，分离范围宽，可分离几百bp至数十kb的DNA片段。"
+ },
+ {
+  "ch": "ch04",
+  "t": "聚丙烯酰胺凝胶",
+  "en": "Polyacrylamide gel",
+  "d": "孔径小且可通过单体与交联剂比例精确调控的凝胶，分辨率高，可分辨相差一个碱基的DNA片段。"
+ },
+ {
+  "ch": "ch04",
+  "t": "溴化乙锭",
+  "en": "Ethidium bromide (EB)",
+  "d": "一种经典荧光染料，可嵌入DNA双链中使核酸在紫外下显色，但具诱变毒性。"
+ },
+ {
+  "ch": "ch04",
+  "t": "超螺旋DNA",
+  "en": "Supercoiled DNA",
+  "d": "结构最紧凑的拓扑构象，在凝胶网络中迁移最快，常用于质粒质量分析。"
+ },
+ {
+  "ch": "ch04",
+  "t": "脉冲场凝胶电泳",
+  "en": "Pulsed-field gel electrophoresis (PFGE)",
+  "d": "通过周期性改变电场方向使长链DNA反复重定向，从而分离10kb至10Mb大分子DNA的技术。"
+ },
+ {
+  "ch": "ch04",
+  "t": "变性RNA电泳",
+  "en": "Denaturing RNA electrophoresis",
+  "d": "用乙二醛等试剂使RNA高级结构解体后再电泳，使迁移率约与分子量成正比，以准确判断RNA大小和完整性。"
+ },
+ {
+  "ch": "ch04",
+  "t": "SDS-PAGE",
+  "en": "SDS-polyacrylamide gel electrophoresis",
+  "d": "用SDS使蛋白质变性并带上均匀负电荷，使迁移率主要取决于分子量的蛋白质电泳方法。"
+ },
+ {
+  "ch": "ch04",
+  "t": "蛋白质印迹",
+  "en": "Western blotting",
+  "d": "将电泳分离的蛋白质转膜后用特异性抗体检测，实现目标蛋白定性和半定量分析的技术。"
+ },
+ {
+  "ch": "ch04",
+  "t": "离子交换层析",
+  "en": "Ion-exchange chromatography",
+  "d": "依据物质所带电荷差异，通过离子交换剂结合与盐浓度或pH梯度洗脱进行分离纯化的方法。"
+ },
+ {
+  "ch": "ch04",
+  "t": "凝胶过滤层析",
+  "en": "Gel filtration chromatography",
+  "d": "又称分子排阻层析，依据分子大小分离，小分子进入凝胶珠孔隙而洗脱慢，大分子被排阻而先洗脱。"
+ },
+ {
+  "ch": "ch04",
+  "t": "亲和层析",
+  "en": "Affinity chromatography",
+  "d": "利用生物分子间强而特异的亲和力（如His标签与Ni2+、抗体与抗原）选择性纯化目标蛋白的方法。"
+ },
+ {
+  "ch": "ch04",
+  "t": "分子杂交",
+  "en": "Molecular hybridization",
+  "d": "不同来源的两条互补单链核酸在合适离子强度和温度下通过碱基互补配对形成双链的过程。"
+ },
+ {
+  "ch": "ch04",
+  "t": "杂交探针",
+  "en": "Hybridization probe",
+  "d": "已知序列的标记多聚核苷酸链，与目标核酸互补配对以特异性识别电泳分离后的目标DNA或RNA。"
+ },
+ {
+  "ch": "ch04",
+  "t": "放射性标记",
+  "en": "Radioactive labeling",
+  "d": "用³²P等同位素标记探针，通过X光胶片自显影检测，灵敏度高但有放射性风险。"
+ },
+ {
+  "ch": "ch04",
+  "t": "地高辛标记",
+  "en": "DIG labeling",
+  "d": "用洋地黄毒苷标记探针，通过抗DIG抗体结合酶促显色或化学发光检测的常用非放射性方法。"
+ },
+ {
+  "ch": "ch04",
+  "t": "生物素标记",
+  "en": "Biotin labeling",
+  "d": "利用生物素与链霉亲和素的高亲和力，用streptavidin-HRP/AP进行检测的探针标记方式。"
+ },
+ {
+  "ch": "ch04",
+  "t": "荧光标记",
+  "en": "Fluorescent labeling",
+  "d": "用Cy3、Cy5、FAM等荧光基团标记探针，可直接观察荧光信号，常用于原位杂交和芯片检测。"
+ },
+ {
+  "ch": "ch04",
+  "t": "Southern印迹",
+  "en": "Southern blotting",
+  "d": "由Edwin Southern发明的DNA印迹杂交技术，经电泳分离、变性转膜后用标记探针检测特定DNA序列。"
+ },
+ {
+  "ch": "ch04",
+  "t": "Northern印迹",
+  "en": "Northern blotting",
+  "d": "与Southern类似但分离对象为RNA的印迹杂交技术，用于RNA定性定量分析和基因转录活性检测。"
+ },
+ {
+  "ch": "ch04",
+  "t": "荧光原位杂交",
+  "en": "Fluorescence in situ hybridization (FISH)",
+  "d": "对固定细胞或染色体上的核酸变性后用荧光标记探针杂交，原位观察DNA序列在染色体上定位的技术。"
+ },
+ {
+  "ch": "ch04",
+  "t": "染色体涂染",
+  "en": "Chromosome painting",
+  "d": "用不同荧光标记的探针标记特定染色体，在间期核中显示各染色体所占区域（领地）的原位杂交技术。"
+ },
+ {
+  "ch": "ch04",
+  "t": "DNA指纹",
+  "en": "DNA fingerprinting",
+  "d": "利用基因组微卫星重复序列模式个体间差异，经酶切、电泳、转膜和探针杂交获得个体特异条带图谱的技术。"
+ },
+ {
+  "ch": "ch04",
+  "t": "小卫星序列",
+  "en": "Minisatellite",
+  "d": "基因组中重复次数高度多态的串联重复序列，是DNA指纹分析的基础。"
+ },
+ {
+  "ch": "ch04",
+  "t": "变性",
+  "en": "Denaturation",
+  "d": "PCR中约95℃高温使双链DNA氢键断裂、解链为单链模板的步骤。"
+ },
+ {
+  "ch": "ch04",
+  "t": "退火",
+  "en": "Annealing",
+  "d": "PCR中降温至约50-60℃使引物与模板互补序列特异性结合的步骤。"
+ },
+ {
+  "ch": "ch04",
+  "t": "延伸",
+  "en": "Extension",
+  "d": "PCR中约72℃时热稳定DNA聚合酶从引物3'端沿模板合成互补链的步骤。"
+ },
+ {
+  "ch": "ch04",
+  "t": "Taq聚合酶",
+  "en": "Taq polymerase",
+  "d": "来源于嗜热菌的热稳定DNA聚合酶，是PCR反应中常用的DNA合成酶。"
+ },
+ {
+  "ch": "ch04",
+  "t": "逆转录PCR",
+  "en": "Reverse transcription PCR (RT-PCR)",
+  "d": "以mRNA为模板经逆转录酶合成cDNA后再进行PCR扩增，用于半定量检测基因mRNA表达水平的方法。"
+ },
+ {
+  "ch": "ch04",
+  "t": "Oligo(dT)引物",
+  "en": "Oligo(dT) primer",
+  "d": "识别mRNA的Poly(A)尾、优先逆转录真核mRNA的逆转录引物，不适用于无Poly(A)尾的RNA。"
+ },
+ {
+  "ch": "ch04",
+  "t": "随机引物",
+  "en": "Random primer",
+  "d": "在RNA多个位置启动逆转录、不依赖Poly(A)尾的引物，适用于多种RNA及部分降解的RNA。"
+ },
+ {
+  "ch": "ch04",
+  "t": "内参基因",
+  "en": "Reference gene (internal control)",
+  "d": "表达稳定的看家基因（如ACTIN、GAPDH），用于校正样本间RNA上样量和逆转录效率差异的参照。"
+ },
+ {
+  "ch": "ch04",
+  "t": "实时荧光定量PCR",
+  "en": "Real-time quantitative PCR (qPCR)",
+  "d": "在PCR体系中加入荧光基团实时监测信号累积，通过标准曲线对未知模板进行定量分析的技术。"
+ },
+ {
+  "ch": "ch04",
+  "t": "SYBR Green I",
+  "en": "SYBR Green I",
+  "d": "结合双链DNA小沟的非特异性荧光染料，用于qPCR中实时监测扩增产物量。"
+ },
+ {
+  "ch": "ch04",
+  "t": "分子信标",
+  "en": "Molecular beacon",
+  "d": "两端分别标记荧光基团和淬灭基团的发夹型探针，与目标序列杂交后发夹打开发出荧光，特异性高。"
  }
 ]
