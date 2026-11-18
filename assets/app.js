@@ -2080,8 +2080,9 @@
   function renderTextbook() {
     var host = document.getElementById("tbhost"); if (!host) return;
     var T = window.TEXTBOOK; if (!T) { host.innerHTML = '<p class="empty">数据未加载。</p>'; return; }
+    var mappedNames = (T.chapters || []).map(function (ch) { return ch.title; }).join("、");
     var html = '<p class="hint">' + esc(T.source) + " ｜ " + esc(T.note) + "</p>" +
-      '<p class="hint">📌 本站目前对应教材：<b>第一章 绪论</b>、<b>第二章 染色体与DNA</b>（教师课件把第二章拆为「染色体与DNA」「DNA的复制」两次讲授，均含 §2.3 DNA的复制）。</p>';
+      '<p class="hint">📌 本站目前对应教材：<b>' + esc(mappedNames) + '</b>。教师课件将部分章节拆成多次讲授，本表按“本站模块”逐项对应。</p>';
     (T.chapters || []).forEach(function (ch) {
       html += '<div class="tb-chapter"><h3>' + esc(ch.title) + "</h3>" +
         '<table class="tbl"><thead><tr><th>教材章节（第5版）</th><th>本站模块</th><th>页号</th><th>覆盖</th><th></th></tr></thead><tbody>';
