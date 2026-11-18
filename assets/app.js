@@ -437,9 +437,14 @@
   }
 
   /* ================= MCQ ================= */
+  function kpJump(q) {
+    if (!q || !q.kp) return "";
+    return ' <a class="ppt-link" href="#s_' + q.kp + '">📽 对应PPT页</a>';
+  }
+
   function renderMCQ(cid, q, idx) {
     var box = el("div", "q"); box.id = "q_" + q.id;
-    box.appendChild(el("p", "qq", "第 " + idx + " 题 " + esc(q.q) + (q.mod ? '<span class="src">[' + esc(q.mod) + "]</span>" : "")));
+    box.appendChild(el("p", "qq", "第 " + idx + " 题 " + esc(q.q) + (q.mod ? '<span class="src">[' + esc(q.mod) + "]</span>" : "") + kpJump(q)));
     var opts = el("div", "mcq");
     q.o.forEach(function (o) {
       var letter = o.trim().charAt(0);
@@ -497,7 +502,7 @@
   /* ================= 判断题 ================= */
   function renderJudge(cid, q, idx) {
     var box = el("div", "q"); box.id = "q_" + q.id;
-    box.appendChild(el("p", "qq", "第 " + idx + " 题（判断对错） " + esc(q.q)));
+    box.appendChild(el("p", "qq", "第 " + idx + " 题（判断对错） " + esc(q.q) + kpJump(q)));
     var opts = el("div", "mcq");
     ["对", "错"].forEach(function (v) {
       var b = el("button", "mopt", v); b.dataset.l = v;
@@ -548,7 +553,7 @@
   /* ================= fill ================= */
   function renderFill(cid, q, idx) {
     var box = el("div", "q"); box.id = "q_" + q.id;
-    box.appendChild(el("p", "qq", "第 " + idx + " 题 " + esc(q.q)));
+    box.appendChild(el("p", "qq", "第 " + idx + " 题 " + esc(q.q) + kpJump(q)));
     var inp = el("input", "ans"); inp.placeholder = "输入答案（多个空用逗号分隔）"; box.appendChild(inp);
     var bar = el("div", "self");
     var bChk = el("button", "ok", "检查"), bShow = el("button", "", "显示答案");
@@ -607,7 +612,7 @@
         answerHTML = "<b>参考答案：</b><br>" + esc(q.a).replace(/\n/g, "<br>");
       }
     }
-    box.appendChild(el("p", "qq", title));
+    box.appendChild(el("p", "qq", title + kpJump(q)));
     var ta = el("textarea", "ta");
     ta.placeholder = (kind === "term")
       ? "在此用键盘输入你的定义（先自己写，再展开标准定义核对；内容会自动保存）"
