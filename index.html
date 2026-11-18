@@ -33,7 +33,7 @@ body.locked{overflow:hidden}
     <input type="password" id="gatepw" placeholder="密码" autofocus>
     <button type="submit" id="gatebtn">进入</button>
     <div class="err" id="gateerr"></div>
-    <div class="hint">本页面仅限授权访问</div>
+    <div class="hint">本页面仅限授权访问 · 首次验证后本设备自动登录</div>
   </form>
 </div>
 <div class="wrap">
@@ -120,8 +120,8 @@ body.locked{overflow:hidden}
       .then(function(k){return crypto.subtle.deriveBits({name:"PBKDF2",salt:b64(SALT_B64),iterations:ITER,hash:"SHA-256"},k,256);})
       .then(function(bits){return new Uint8Array(bits);});
   }
-  if(sessionStorage.getItem(KEY)==="1"){unlock();}
-  document.getElementById("logout").addEventListener("click",function(e){e.preventDefault();sessionStorage.removeItem(KEY);location.reload();});
+  if(sessionStorage.getItem(KEY)==="1" || localStorage.getItem(KEY)==="1"){unlock();}
+  document.getElementById("logout").addEventListener("click",function(e){e.preventDefault();sessionStorage.removeItem(KEY);localStorage.removeItem(KEY);location.reload();});
   var form=document.getElementById("gateform"),pw=document.getElementById("gatepw"),err=document.getElementById("gateerr"),btn=document.getElementById("gatebtn");
   form.addEventListener("submit",function(e){
     e.preventDefault();
@@ -130,7 +130,7 @@ body.locked{overflow:hidden}
     if(!pw.value){err.textContent="请输入密码";return;}
     btn.disabled=true;btn.textContent="验证中…";
     derive(pw.value).then(function(got){
-      if(bytesEqual(got,b64(DK_B64))){sessionStorage.setItem(KEY,"1");unlock();}
+      if(bytesEqual(got,b64(DK_B64))){sessionStorage.setItem(KEY,"1");localStorage.setItem(KEY,"1");unlock();}
       else{err.textContent="密码错误，请重试";pw.value="";pw.focus();}
       btn.disabled=false;btn.textContent="进入";
     }).catch(function(){err.textContent="验证失败，请重试";btn.disabled=false;btn.textContent="进入";});
