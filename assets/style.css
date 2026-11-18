@@ -461,3 +461,12 @@ html[data-theme="dark"] .notes-rich .term-chip{background:#22303d;border-color:#
 
 .cp-answerbox{font-size:13px;line-height:1.7;margin-top:5px;background:#f2f8ff;border-left:3px solid #2f7ab3;padding:7px 9px;border-radius:4px}
 .cp-analysis{margin-top:4px;color:#44576a}
+
+.ppt-qa{margin-top:8px;border:1px solid #f0d9a8;background:#fffaf0;border-radius:9px;padding:9px 12px}
+.ppt-qa .qa-h{font-weight:700;color:#8a5a00;font-size:13px;margin-bottom:5px}
+.ppt-qa .qa-item{border-top:1px dashed #eadcc0;margin-top:5px;padding-top:5px}
+.ppt-qa .qa-item summary{cursor:pointer;font-size:13px;line-height:1.6;color:#5a4a1a}
+.ppt-qa .qa-a{font-size:13px;line-height:1.75;color:#2c3e50;padding:6px 0 2px 8px;border-left:3px solid #d6a83a;margin-top:4px}
+html[data-theme="dark"] .ppt-qa{background:#3a3320;border-color:#6b5d2a}
+html[data-theme="dark"] .ppt-qa .qa-h,html[data-theme="dark"] .ppt-qa .qa-item summary{color:#e0c060}
+html[data-theme="dark"] .ppt-qa .qa-a{color:#d7dee8;border-color:#8a6d2a}

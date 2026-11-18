@@ -1261,6 +1261,19 @@
     return box;
   }
 
+  function renderQA(qa) {
+    if (!qa || !qa.length) return null;
+    var box = el("div", "ppt-qa");
+    box.appendChild(el("div", "qa-h", "老师PPT中的问题 · 解答"));
+    qa.forEach(function (item, i) {
+      var d = el("details", "qa-item");
+      if (i === 0) d.open = true;
+      d.innerHTML = '<summary><b>问题 ' + (i + 1) + '：</b>' + esc(item.q) + '</summary><div class="qa-a"><b>解答：</b>' + esc(item.a).replace(/\n/g, "<br>") + '</div>';
+      box.appendChild(d);
+    });
+    return box;
+  }
+
   function renderChapter(cid) {
     var ch = window.CHAPTERS[cid];
     if (ch) backfillChecks(cid, ch);
@@ -1354,6 +1367,7 @@
         };
         body.appendChild(img);
         body.appendChild(renderNotes(s.notes));
+        var qaBox = renderQA(s.qa); if (qaBox) body.appendChild(qaBox);
         card.appendChild(body);
         if (s.points && s.points.length && !/本页主题：/.test(String(s.notes || ""))) {
           var pb = el("div", "points");
