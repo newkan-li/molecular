@@ -1180,6 +1180,61 @@
     return sec;
   }
 
+  function renderNotes(notes) {
+    var box = el("div", "notes notes-rich");
+    var TERM_EN = {
+      "转录":"Transcription","原核生物":"Prokaryotes","真核生物":"Eukaryotes","聚合酶":"Polymerase","模板":"Template","模板链":"Template strand","终止":"Termination","识别":"Recognition","起始":"Initiation","延伸":"Elongation","操纵子":"Operon","启动子":"Promoter","大肠杆菌":"E. coli","全酶":"Holoenzyme","核心酶":"Core enzyme","亚基":"Subunit","结合":"Binding","复合物":"Complex","σ因子":"Sigma factor","足迹法":"Footprinting","反式作用因子":"Trans-acting factor","结构基因":"Structural gene","调控基因":"Regulator gene","变构调控":"Allostery","通透酶":"Permease","阻遏蛋白":"Repressor","操纵基因":"Operator","激活蛋白":"Activator","不可诱导型突变":"Uninducible mutation","辅阻遏物":"Co-repressor","前导肽":"Leader peptide","增强子":"Enhancer","超级增强子":"Super-enhancer","α-鹅膏蕈碱":"α-Amanitin","表位标签":"Epitope tagging","前启始复合体":"Preinitiation complex","启动子清除":"Promoter clearance","中介体":"Mediator","核心启动子":"Core promoter","凝胶迁移实验":"Gel shift assay","生物素":"Biotin"
+    };
+    function chipText(x) {
+      if (/[A-Za-z]/.test(x)) return x;
+      var base = x.replace(/（.*?）/g, "");
+      var en = TERM_EN[base];
+      return en ? en + "（" + base + "）" : x;
+    }
+    var lines = String(notes || "").split("\n");
+    function addHead(t) { box.appendChild(el("div", "note-head", t)); }
+    function addList(text, ordered) {
+      var parts = String(text || "").split(/；|(?=\d+）)/).map(function (x) {
+        return x.replace(/^\s*\d+）\s*/, "").replace(/^[：:]\s*/, "").trim();
+      }).filter(Boolean);
+      if (!parts.length) return;
+      var ul = el(ordered ? "ol" : "ul", "note-list");
+      parts.forEach(function (x) { ul.appendChild(el("li", "", esc(x))); });
+      box.appendChild(ul);
+    }
+    var hasStructured = notes && /\n(本页主题|PPT内容|讲解|英文术语|补充讲解|读图提示)：/.test(notes);
+    if (!hasStructured) { box.textContent = notes || ""; return box; }
+    lines.forEach(function (line) {
+      line = line.trim(); if (!line) return;
+      if (line.indexOf("本页主题：") === 0) {
+        var t = el("div", "note-title", esc(line.slice(5)));
+        box.appendChild(t);
+      } else if (line.indexOf("PPT内容：") === 0) {
+        addHead("PPT 要点");
+        addList(line.slice(5), false);
+      } else if (line.indexOf("讲解：") === 0) {
+        addHead("讲解");
+        box.appendChild(el("div", "note-explain", esc(line.slice(3))));
+      } else if (line.indexOf("补充讲解：") === 0) {
+        addHead("补充讲解");
+        box.appendChild(el("div", "note-explain", esc(line.slice(5))));
+      } else if (line.indexOf("逐条理解：") === 0) {
+        return;
+      } else if (line.indexOf("英文术语：") === 0) {
+        addHead("英文术语 / 缩写");
+        var chips = el("div", "term-chips");
+        line.slice(5).split("；").forEach(function (x) { if (x.trim()) chips.appendChild(el("span", "term-chip", esc(chipText(x.trim())))); });
+        box.appendChild(chips);
+      } else if (line.indexOf("读图提示：") === 0) {
+        addHead("读图提示");
+        box.appendChild(el("div", "note-callout", esc(line.slice(5))));
+      } else {
+        box.appendChild(el("div", "note-text", esc(line)));
+      }
+    });
+    return box;
+  }
+
   function renderChapter(cid) {
     var ch = window.CHAPTERS[cid];
     if (ch) backfillChecks(cid, ch);
@@ -1268,9 +1323,9 @@
         var img = el("img"); img.src = s.img; img.loading = "lazy"; img.alt = s.title;
         img.onclick = function () { document.getElementById("lbimg").src = s.img; document.getElementById("lightbox").classList.add("on"); };
         body.appendChild(img);
-        body.appendChild(el("div", "notes", esc(s.notes)));
+        body.appendChild(renderNotes(s.notes));
         card.appendChild(body);
-        if (s.points && s.points.length) {
+        if (s.points && s.points.length && !/本页主题：/.test(String(s.notes || ""))) {
           var pb = el("div", "points");
           pb.innerHTML = '<div class="pt-h">📌 本页要点</div><ul>' +
             s.points.map(function (p) { return "<li>" + esc(p) + "</li>"; }).join("") + "</ul>";

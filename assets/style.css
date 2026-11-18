@@ -437,3 +437,19 @@ html[data-theme="dark"] .test-wrap{background:#1f262e;border-color:#33475a}
 
 .ppt-link{font-size:11.5px;color:#1f5c8b;border:1px solid #cfe0ee;background:#f2f8ff;border-radius:12px;padding:1px 7px;margin-left:6px;text-decoration:none;white-space:nowrap}
 .ppt-link:hover{background:#e2f0ff}
+
+.notes-rich{display:block;background:#f8fbfe;border:1px solid #e0eaf3;border-radius:9px;padding:10px 12px;margin-top:8px}
+.notes-rich .note-title{font-size:15px;font-weight:700;color:#1f5c8b;line-height:1.5;margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid #dce8f2}
+.notes-rich .note-head{font-size:11.5px;font-weight:700;color:#8a5a00;letter-spacing:.03em;margin:9px 0 3px}
+.notes-rich .note-list{margin:0 0 4px 18px;padding:0;font-size:13px;line-height:1.7}
+.notes-rich .note-list li{margin:2px 0}
+.notes-rich .note-explain{font-size:13px;line-height:1.8;color:#2c3e50;background:#eef6fb;border-left:3px solid #2f7ab3;padding:7px 9px;border-radius:4px}
+.notes-rich .note-callout{font-size:12.5px;line-height:1.7;color:#5a4a1a;background:#fff8e8;border-left:3px solid #d6a83a;padding:7px 9px;border-radius:4px}
+.notes-rich .note-text{font-size:13px;line-height:1.75;margin:3px 0}
+.notes-rich .term-chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:2px}
+.notes-rich .term-chip{font-size:11.5px;line-height:1.5;background:#eef4fb;border:1px solid #cfe0ee;color:#31516f;border-radius:12px;padding:2px 7px}
+html[data-theme="dark"] .notes-rich{background:#1b2531;border-color:#2c3a4a}
+html[data-theme="dark"] .notes-rich .note-title{color:#a8c6e0;border-color:#33475a}
+html[data-theme="dark"] .notes-rich .note-explain{background:#22303d;color:#d7dee8}
+html[data-theme="dark"] .notes-rich .note-callout{background:#3a3320;color:#e0c060}
+html[data-theme="dark"] .notes-rich .term-chip{background:#22303d;border-color:#33475a;color:#a8c6e0}
