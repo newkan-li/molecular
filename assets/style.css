@@ -305,7 +305,7 @@ html[data-theme="sepia"] .planrow input{background:#faf3e0}
 .rev-rate button.no{border-color:var(--acc);color:var(--acc)}
 
 /* ================= 主题选择器 ================= */
-#themebar{position:fixed;top:10px;right:12px;z-index:1500;display:flex;gap:2px;padding:3px;border-radius:20px;border:1px solid var(--line);background:rgba(255,255,255,.88);backdrop-filter:blur(6px);box-shadow:0 1px 4px rgba(20,30,60,.08)}
+#themebar{position:absolute;top:10px;right:12px;z-index:1500;display:flex;gap:2px;padding:3px;border-radius:20px;border:1px solid var(--line);background:rgba(255,255,255,.88);backdrop-filter:blur(6px);box-shadow:0 1px 4px rgba(20,30,60,.08)}
 #themebar button{border:none;background:transparent;color:var(--sub);font-size:12.5px;padding:3px 10px;border-radius:16px;cursor:pointer;font-family:inherit}
 #themebar button:hover{color:var(--blue)}
 #themebar button.on{background:var(--blue);color:#fff}

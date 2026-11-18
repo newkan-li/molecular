@@ -1370,8 +1370,9 @@
           if (!body.querySelector(".imgfail")) body.appendChild(el("div", "imgfail", "PPT图片加载失败：" + s.title + "。请刷新页面或检查网络。"));
         };
         body.appendChild(img);
-        body.appendChild(renderNotes(s.notes));
-        var qaBox = renderQA(s.qa); if (qaBox) body.appendChild(qaBox);
+        var notesBox = renderNotes(s.notes);
+        body.appendChild(notesBox);
+        var qaBox = renderQA(s.qa); if (qaBox) notesBox.appendChild(qaBox);
         card.appendChild(body);
         if (s.points && s.points.length && !/本页主题：/.test(String(s.notes || ""))) {
           var pb = el("div", "points");
