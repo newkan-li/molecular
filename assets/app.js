@@ -1320,8 +1320,12 @@
         head.innerHTML = '<span class="t">' + esc(s.title) + '</span><span class="lv lv-' + esc(lv) + '">' + esc(lv) + "</span>";
         card.appendChild(head);
         var body = el("div", "body");
-        var img = el("img"); img.src = s.img; img.loading = "lazy"; img.alt = s.title;
+        var img = el("img"); img.src = s.img; img.loading = (s.page && s.page <= 3) ? "eager" : "lazy"; img.decoding = "async"; img.alt = s.title;
         img.onclick = function () { document.getElementById("lbimg").src = s.img; document.getElementById("lightbox").classList.add("on"); };
+        img.onerror = function () {
+          this.style.display = "none";
+          if (!body.querySelector(".imgfail")) body.appendChild(el("div", "imgfail", "PPT图片加载失败：" + s.title + "。请刷新页面或检查网络。"));
+        };
         body.appendChild(img);
         body.appendChild(renderNotes(s.notes));
         card.appendChild(body);
