@@ -1034,6 +1034,15 @@
       fb.innerHTML = (correct ? '<span class="ok">✔ 正确</span>' : '<span class="no">✘ 错误</span>') +
         '　正确答案：<b>' + esc(answerText()) + "</b>" +
         (q.e ? '<div style="margin-top:4px">解析：' + esc(q.e) + "</div>" : "");
+      var again = el("button", "cp-opt", "再做一次");
+      again.style.cssText = "width:auto;margin:8px 0 0";
+      again.onclick = function () {
+        done = false; fb.innerHTML = "";
+        if (kind === "mcq" && opts) Array.prototype.forEach.call(opts.children, function (b) { b.classList.remove("right", "wrong"); });
+        if (kind === "judge" && o2) Array.prototype.forEach.call(o2.children, function (b) { b.classList.remove("right", "wrong"); });
+        if (kind === "fill" && inp) { inp.value = ""; inp.classList.remove("right", "wrong"); }
+      };
+      fb.appendChild(again);
     }
     if (kind === "mcq") {
       box.appendChild(el("div", "cp-q", esc(q.q)));
