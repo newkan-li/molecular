@@ -425,3 +425,12 @@ html[data-theme="dark"] .vmore{background:#1b2531;border-color:#2c3a4a}
 .vtab{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:6px 14px;font-size:13px;color:var(--fg);cursor:pointer}
 .vtab.on{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
 .vgroup h3{font-size:16px;margin:0 0 8px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+
+.chapter-test{border-top:2px solid var(--line);margin-top:28px;padding-top:16px}
+.chapter-test h2{color:var(--blue);margin:0 0 6px}
+.test-wrap{border:1px solid var(--line);border-radius:10px;background:#fff;padding:10px 14px;margin:10px 0}
+.test-wrap>summary{cursor:pointer;font-weight:700;color:var(--blue)}
+.wb-redo{border-top:1px dashed var(--line);margin-top:7px;padding-top:7px}
+.wb-entry.done{opacity:.65}
+.q-exp{margin-top:6px;font-size:13px;line-height:1.65;color:#44576a}
+html[data-theme="dark"] .test-wrap{background:#1f262e;border-color:#33475a}

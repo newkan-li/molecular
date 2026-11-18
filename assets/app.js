@@ -600,7 +600,12 @@
       kps = q.kps || "";
     } else {
       title = (kind === "short" ? "简答题 " : "论述/推导 ") + idx + "：" + esc(q.q);
-      answerHTML = "<b>参考答案：</b><br>" + esc(kind === "calc" ? (q.steps || q.a) : q.a).replace(/\n/g, "<br>");
+      if (kind === "calc") {
+        answerHTML = "<b>参考答案：</b><br>" + esc(q.a || "").replace(/\n/g, "<br>") +
+          (q.steps ? "<br><b>答题步骤：</b><br>" + esc(q.steps).replace(/\n/g, "<br>") : "");
+      } else {
+        answerHTML = "<b>参考答案：</b><br>" + esc(q.a).replace(/\n/g, "<br>");
+      }
     }
     box.appendChild(el("p", "qq", title));
     var ta = el("textarea", "ta");
@@ -616,6 +621,7 @@
     bClr.onclick = function () { if (confirm("清空已输入的答案？")) { ta.value = ""; saveText(cid, q.id, ""); } };
     tbar.appendChild(bClr);
     box.appendChild(tbar);
+    if (q.e) answerHTML += "<br><b>详细解释：</b><br>" + esc(q.e).replace(/\n/g, "<br>");
     var det = el("details", "sol");
     det.innerHTML = '<summary>参考答案 / 踩分点</summary><div class="ansbox">' + answerHTML + "</div>" +
       (kps ? '<div class="kps">' + esc(kps) + "</div>" : "");
@@ -688,32 +694,100 @@
   }
 
   /* ================= wrong book (chapter drawer) ================= */
+  function allQuestionMap(ch) {
+    var qmap = {};
+    ["mcq", "judge", "fill", "short", "calc", "term"].forEach(function (k) {
+      (ch[k] || []).forEach(function (q) { qmap[q.id] = q; });
+    });
+    ((ch.modules || []).forEach(function (m) {
+      (m.slides || []).forEach(function (s) {
+        if (s.check) qmap[s.check.id] = s.check;
+        (s.quiz || []).forEach(function (q) { qmap[q.id] = q; });
+      });
+    }));
+    return qmap;
+  }
+
+  function wrongItem(cid, e, q, onRemoved) {
+    function plain(x) { return esc(x == null ? "" : x).replace(/\n/g, "<br>"); }
+    var item = el("div", "wb-entry");
+    item.innerHTML = '<div class="wq">' + esc(e.q) + '<span class="pill">' + esc(e.type) + "</span>" +
+      (e.cause ? '<span class="cause-tag">' + esc((CAUSES.filter(function (c) { return c[0] === e.cause; })[0] || ["", "其他"])[1]) + "</span>" : "") + "</div>";
+    var act = el("div", "act");
+    var br = el("button", "", "重做本题");
+    var bm = el("button", "", "标记已掌握");
+    var redo = el("div", "wb-redo"); redo.style.display = "none";
+    var rfb = el("div", "cp-fb");
+    var built = false;
+    function clear() { clearWrong(cid, e.id); if (onRemoved) onRemoved(item); }
+    function answerText() {
+      var cd = e.correct;
+      if (q && q.o) {
+        var hit = q.o.filter(function (o) { return String(o).trim().charAt(0) === String(cd).trim(); })[0];
+        if (hit) cd = hit;
+      }
+      return cd;
+    }
+    function reveal(ok) {
+      var html = (ok === true ? '<span class="ok">✔ 正确，已从错题本移除</span>' : ok === false ? '<span class="no">✘ 错误，请对照答案后再做一次</span>' : '<b>参考答案</b>') +
+        '<div class="wa">答案：<b>' + plain(answerText()) + '</b></div>';
+      if (q && q.e) html += '<div class="q-exp"><b>详细解释</b><div>' + plain(q.e) + '</div></div>';
+      if (q && q.kps) html += '<div class="q-exp"><b>踩分点</b><div>' + plain(q.kps) + '</div></div>';
+      rfb.innerHTML = html;
+      if (ok === true) { clear(); item.classList.add("done"); br.disabled = true; bm.disabled = true; }
+    }
+    function build() {
+      if (built) return; built = true;
+      var opts = (q && q.o) ? q.o : (e.type === "judge" ? ["对", "错"] : null);
+      if (opts) {
+        opts.forEach(function (o) {
+          var ob = el("button", "mopt", esc(o));
+          ob.style.cssText = "display:inline-block;margin:4px 6px 4px 0;width:auto";
+          ob.onclick = function () { reveal((e.type === "judge" ? o.trim() : o.trim().charAt(0)) === String(e.correct).trim()); };
+          redo.appendChild(ob);
+        });
+      } else if (e.type === "fill") {
+        var inp = el("input", "ans"); inp.placeholder = "重新输入答案"; inp.style.cssText = "display:block;width:100%;margin:6px 0";
+        var ib = el("button", "ok", "检查"); ib.onclick = function () { reveal(fuzzyMatch(e.correct, inp.value)); };
+        redo.appendChild(inp); redo.appendChild(ib);
+      } else {
+        var ta = el("textarea", "ta"); ta.rows = 4; ta.placeholder = "重新写出答案要点"; ta.style.cssText = "display:block;width:100%;margin:6px 0";
+        var sb = el("button", "ok", "提交并查看详细答案"); sb.onclick = function () { reveal(null); };
+        var mb = el("button", "ok", "我会了，移出"); mb.onclick = function () { reveal(true); };
+        redo.appendChild(ta); redo.appendChild(sb); redo.appendChild(mb);
+      }
+      rfb.innerHTML = '<div class="hint">先自己重做，再提交查看详细答案。</div>';
+      redo.appendChild(rfb);
+    }
+    br.onclick = function () {
+      var on = redo.style.display === "none";
+      if (on) build();
+      redo.style.display = on ? "block" : "none";
+      br.textContent = on ? "收起重做" : "重做本题";
+    };
+    bm.onclick = function () { clear(); item.remove(); };
+    act.appendChild(br); act.appendChild(bm); item.appendChild(act); item.appendChild(redo);
+    return item;
+  }
+
   function openWrongDrawer(cid, ch) {
     var old = document.getElementById("wbd"); if (old) old.remove();
     var d = el("div", "statsbox"); d.id = "wbd";
-    d.style.cssText = "position:fixed;top:0;right:0;bottom:0;width:min(420px,94vw);overflow:auto;z-index:1500;box-shadow:-4px 0 16px rgba(0,0,0,.18);border-radius:0;margin:0";
+    d.style.cssText = "position:fixed;top:0;right:0;bottom:0;width:min(440px,94vw);overflow:auto;z-index:1500;box-shadow:-4px 0 16px rgba(0,0,0,.18);border-radius:0;margin:0";
     var head = el("div", "");
-    head.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center"><b style="color:var(--blue)">📕 错题本</b><button class="navbtn" style="width:auto;margin:0" id="wbClose">关闭</button></div>';
+    head.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center"><b style="color:var(--blue)">📕 本章错题本</b><button class="navbtn" style="width:auto;margin:0" id="wbClose">关闭</button></div>';
     d.appendChild(head);
-    var list = wrongList(cid);
-    var qmap = {};
-    ch.mcq.forEach(function (q) { qmap[q.id] = q; });
-    if (!list.length) { d.appendChild(el("p", "empty", "暂无错题，继续加油！")); }
-    list.slice().reverse().forEach(function (e) {
-      var item = el("div", "wb-entry");
-      var q = qmap[e.id];
-      var extra = q ? ("<div style='margin-top:4px'>选项：" + q.o.map(esc).join("　") + "</div>") : "";
-      item.innerHTML = '<div class="wq">' + esc(e.q) + '<span class="pill">' + esc(e.type) + "</span>" +
-        (e.cause ? '<span class="cause-tag">' + esc((CAUSES.filter(function (c) { return c[0] === e.cause; })[0] || ["", "其他"])[1]) + "</span>" : "") + "</div>" +
-        extra +
-        '<div class="wa">正确答案：<b>' + esc(e.correct) + "</b></div>" +
-        (e.chosen ? '<div class="wa">你的作答：' + esc(e.chosen) + "</div>" : "");
-      var act = el("div", "act");
-      var bm = el("button", "", "标记已掌握");
-      bm.onclick = function () { clearWrong(cid, e.id); item.remove(); };
-      act.appendChild(bm); item.appendChild(act);
-      d.appendChild(item);
-    });
+    var list = wrongList(cid), qmap = allQuestionMap(ch);
+    d.appendChild(el("p", "hint", "先自己重做，再看答案；答对后自动移出。错题本不展示你上次的错误选项。"));
+    if (!list.length) d.appendChild(el("p", "empty", "暂无错题，继续加油！"));
+    else {
+      var count = el("p", "hint", "共 " + list.length + " 题。"); d.appendChild(count);
+      list.slice().reverse().forEach(function (e) {
+        d.appendChild(wrongItem(cid, e, qmap[e.id], function (item) {
+          item.remove(); count.textContent = "共 " + wrongList(cid).length + " 题。";
+        }));
+      });
+    }
     document.body.appendChild(d);
     document.getElementById("wbClose").onclick = function () { d.remove(); };
   }
@@ -1063,6 +1137,35 @@
     return box;
   }
 
+  function renderChapterUnitTest(cid, ch) {
+    var counts = { mcq: (ch.mcq || []).length, judge: (ch.judge || []).length, fill: (ch.fill || []).length, short: (ch.short || []).length, calc: (ch.calc || []).length, term: (ch.term || []).length };
+    var total = counts.mcq + counts.judge + counts.fill + counts.short + counts.calc + counts.term;
+    if (!total) return null;
+    var sec = el("section", "chapter-test"); sec.id = "chapter-test";
+    sec.appendChild(el("h2", "", "📝 本章单元测试（课后题优先）"));
+    sec.appendChild(el("p", "hint", "以原书课后题为主，补充客观题与名词解释；共 " + total + " 题。客观题答错、主观题点“我不会”都会进入错题本。"));
+    var box = el("details", "test-wrap"); box.open = false;
+    box.appendChild(el("summary", "", "展开本章单元测试（" + total + " 题）"));
+    function ut(node) { if (node && node.id) node.id = "ut_" + node.id; return node; }
+    var no = 0;
+    function hn(t) { return el("h3", "", ["一", "二", "三", "四", "五", "六"][no++] + "、" + t); }
+    if (counts.short || counts.calc) {
+      box.appendChild(hn("原书课后题（简答 / 论述）"));
+      (ch.short || []).forEach(function (q, i) { box.appendChild(ut(renderSelf(cid, q, i + 1, "short"))); });
+      (ch.calc || []).forEach(function (q, i) { box.appendChild(ut(renderSelf(cid, q, i + 1, "calc"))); });
+    }
+    if (counts.mcq) { box.appendChild(hn("选择题（补充检测）")); ch.mcq.forEach(function (q, i) { box.appendChild(ut(renderMCQ(cid, q, i + 1))); }); }
+    if (counts.judge) { box.appendChild(hn("判断题（补充检测）")); ch.judge.forEach(function (q, i) { box.appendChild(ut(renderJudge(cid, q, i + 1))); }); }
+    if (counts.fill) { box.appendChild(hn("填空题（补充检测）")); ch.fill.forEach(function (q, i) { box.appendChild(ut(renderFill(cid, q, i + 1))); }); }
+    if (counts.term) { box.appendChild(hn("名词解释")); ch.term.forEach(function (q, i) { box.appendChild(ut(renderSelf(cid, q, i + 1, "term"))); }); }
+    sec.appendChild(box);
+    var bar = el("div", "navbtns");
+    var wb = el("button", "navbtn", "📕 打开本章错题本"); wb.onclick = function () { openWrongDrawer(cid, ch); }; bar.appendChild(wb);
+    var top = el("a", "navbtn", "↑ 回到本章开头"); top.href = "#main"; top.style.cssText = "width:auto;display:inline-block;text-decoration:none"; bar.appendChild(top);
+    sec.appendChild(bar);
+    return sec;
+  }
+
   function renderChapter(cid) {
     var ch = window.CHAPTERS[cid];
     if (ch) backfillChecks(cid, ch);
@@ -1084,9 +1187,10 @@
       if (m.term && m.term.length) subs.push(["m" + m.i + "-term", "名词解释"]);
       subs.forEach(function (x) { var sa = el("a", "sub", "· " + x[1]); sa.href = "#" + x[0]; aside.appendChild(sa); });
     });
+    var ctA = el("a", "sub", "📝 本章单元测试（课后题优先）"); ctA.href = "#chapter-test"; aside.appendChild(ctA);
     var tools = el("div", "navbtns");
     function tb(label, fn) { var b = el("button", "navbtn", label); b.onclick = fn; tools.appendChild(b); }
-    tb("📕 错题本", function () { openWrongDrawer(cid, ch); });
+    tb("📕 本章错题本", function () { openWrongDrawer(cid, ch); });
     tb("📋 交卷判分", function () { mGradeAll(cid); });
     tb("📊 学习统计", function () { renderStats(cid, ch, document.getElementById("statsbox")); document.getElementById("statsbox").scrollIntoView({ behavior: "smooth" }); });
     tb("💾 数据备份", function () { backupChapter(cid); });
@@ -1234,6 +1338,8 @@
       main.appendChild(sec);
     });
 
+    var unitTest = renderChapterUnitTest(cid, ch);
+    if (unitTest) main.appendChild(unitTest);
     main.appendChild(el("footer", "", "仅供个人学习使用 ｜ 数据保存在本机浏览器 localStorage"));
     refreshProgress();
   }
@@ -2028,8 +2134,7 @@
   /* ================= global wrong page ================= */
   function renderWrongPage() {
     var host = document.getElementById("wronghost");
-    var M = window.MANIFEST || [];
-    var total = 0;
+    var M = window.MANIFEST || [], total = 0;
     M.forEach(function (m) {
       var ch = window.CHAPTERS[m.id]; if (!ch) return;
       var list = wrongList(m.id);
@@ -2037,18 +2142,9 @@
       total += list.length;
       var sec = el("section");
       sec.appendChild(el("h2", "", esc(m.title) + "（" + list.length + "）"));
-      var qmap = {}; ch.mcq.forEach(function (q) { qmap[q.id] = q; });
+      var qmap = allQuestionMap(ch);
       list.slice().reverse().forEach(function (e) {
-        var item = el("div", "wb-entry");
-        var q = qmap[e.id];
-        item.innerHTML = '<div class="wq">' + esc(e.q) + '<span class="pill">' + esc(e.type) + "</span>" +
-          (e.cause ? '<span class="cause-tag">' + esc((CAUSES.filter(function (c) { return c[0] === e.cause; })[0] || ["", "其他"])[1]) + "</span>" : "") + "</div>" +
-          (q ? '<div style="margin-top:4px">选项：' + q.o.map(esc).join("　") + "</div>" : "") +
-          '<div class="wa">正确答案：<b>' + esc(e.correct) + "</b></div>" +
-          (e.chosen ? '<div class="wa">你的作答：' + esc(e.chosen) + "</div>" : "");
-        var act = el("div", "act"); var b = el("button", "", "标记已掌握");
-        b.onclick = function () { clearWrong(m.id, e.id); item.remove(); };
-        act.appendChild(b); item.appendChild(act); sec.appendChild(item);
+        sec.appendChild(wrongItem(m.id, e, qmap[e.id], function (item) { item.remove(); }));
       });
       host.appendChild(sec);
     });
