@@ -1019,6 +1019,10 @@
       }
       return q.a != null ? String(q.a) : "";
     }
+    function analysisHTML(prefix) {
+      return (prefix || "") + '<div class="cp-answerbox"><b>答案：</b>' + esc(answerText()) +
+        (q.e ? '<div class="cp-analysis"><b>答案解析：</b>' + esc(q.e) + '</div>' : '') + '</div>';
+    }
     function grade(correct, opts, chosenEl, chosenVal) {
       if (done) return; done = true;
       kpRecord(kp, correct);
@@ -1032,8 +1036,7 @@
         if (chosenEl && !correct) chosenEl.classList.add("wrong");
       }
       fb.innerHTML = (correct ? '<span class="ok">✔ 正确</span>' : '<span class="no">✘ 错误</span>') +
-        '　正确答案：<b>' + esc(answerText()) + "</b>" +
-        (q.e ? '<div style="margin-top:4px">解析：' + esc(q.e) + "</div>" : "");
+        analysisHTML("　");
       var again = el("button", "cp-opt", "再做一次");
       again.style.cssText = "width:auto;margin:8px 0 0";
       again.onclick = function () {
@@ -1072,7 +1075,8 @@
       box.appendChild(el("div", "cp-q", esc(q.q)));
       var inp = el("input", "cp-in"); inp.placeholder = "输入答案";
       var bc = el("button", "cp-opt", "检查"); bc.onclick = function () { grade(fuzzyMatch(q.a, inp.value), null, null, inp.value); };
-      box.appendChild(inp); box.appendChild(bc);
+      var bs = el("button", "cp-opt", "查看答案解析"); bs.onclick = function () { fb.innerHTML = analysisHTML(""); };
+      box.appendChild(inp); box.appendChild(bc); box.appendChild(bs);
     }
     box.appendChild(fb);
     var prior = cpPrior(cid, kp, q, kind);

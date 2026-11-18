@@ -458,3 +458,6 @@ html[data-theme="dark"] .notes-rich .term-chip{background:#22303d;border-color:#
 .imgfail{font-size:12.5px;line-height:1.7;color:#8a3a30;background:#fff5f4;border:1px dashed #e2b8b3;border-radius:6px;padding:8px 10px;margin:3px 0}
 
 .no-check{border-style:dashed;background:#f7fafc}
+
+.cp-answerbox{font-size:13px;line-height:1.7;margin-top:5px;background:#f2f8ff;border-left:3px solid #2f7ab3;padding:7px 9px;border-radius:4px}
+.cp-analysis{margin-top:4px;color:#44576a}
