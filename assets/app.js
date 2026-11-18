@@ -1254,6 +1254,9 @@
       } else if (line.indexOf("读图提示：") === 0) {
         addHead("读图提示");
         box.appendChild(el("div", "note-callout", esc(line.slice(5))));
+      } else if (line.indexOf("本页详解：") === 0) {
+        addHead("本页详解");
+        box.appendChild(el("div", "note-explain", esc(line.slice(5))));
       } else {
         box.appendChild(el("div", "note-text", esc(line)));
       }
