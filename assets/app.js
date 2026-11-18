@@ -1053,11 +1053,13 @@
       var opts = el("div", "cp-opts");
       q.o.forEach(function (o, i) { var b = el("button", "cp-opt", esc(o)); b.onclick = function () { grade(optLetter(o) === String(q.a).trim(), opts, b, optLetter(o)); }; opts.appendChild(b); });
       box.appendChild(opts);
+      var showM = el("button", "cp-opt", "查看答案解析"); showM.style.cssText = "width:auto;margin:6px 0 0"; showM.onclick = function () { fb.innerHTML = analysisHTML(""); }; box.appendChild(showM);
     } else if (kind === "judge") {
       box.appendChild(el("div", "cp-q", esc(q.q)));
       var o2 = el("div", "cp-opts");
       ["对", "错"].forEach(function (v) { var b = el("button", "cp-opt", v); b.onclick = function () { grade(v === q.a, o2, b, v); }; o2.appendChild(b); });
       box.appendChild(o2);
+      var showJ = el("button", "cp-opt", "查看答案解析"); showJ.style.cssText = "width:auto;margin:6px 0 0"; showJ.onclick = function () { fb.innerHTML = analysisHTML(""); }; box.appendChild(showJ);
     } else if (kind === "short") {
       box.appendChild(el("div", "cp-q", esc(q.q)));
       var ta = el("textarea", "ta"); ta.rows = 4; ta.placeholder = "先自己写出关键词/流程，再查看参考答案"; ta.style.cssText = "display:block;width:100%;margin:6px 0";
