@@ -1035,6 +1035,7 @@
         });
         if (chosenEl && !correct) chosenEl.classList.add("wrong");
       }
+      fb.style.display = "block";
       fb.innerHTML = (correct ? '<span class="ok">✔ 正确</span>' : '<span class="no">✘ 错误</span>') +
         analysisHTML("　");
       var again = el("button", "cp-opt", "再做一次");
@@ -1053,13 +1054,13 @@
       var opts = el("div", "cp-opts");
       q.o.forEach(function (o, i) { var b = el("button", "cp-opt", esc(o)); b.onclick = function () { grade(optLetter(o) === String(q.a).trim(), opts, b, optLetter(o)); }; opts.appendChild(b); });
       box.appendChild(opts);
-      var showM = el("button", "cp-opt", "查看答案解析"); showM.style.cssText = "width:auto;margin:6px 0 0"; showM.onclick = function () { fb.innerHTML = analysisHTML(""); }; box.appendChild(showM);
+      var showM = el("button", "cp-opt", "查看答案解析"); showM.style.cssText = "width:auto;margin:6px 0 0"; showM.onclick = function () { fb.style.display = "block"; fb.innerHTML = analysisHTML(""); }; box.appendChild(showM);
     } else if (kind === "judge") {
       box.appendChild(el("div", "cp-q", esc(q.q)));
       var o2 = el("div", "cp-opts");
       ["对", "错"].forEach(function (v) { var b = el("button", "cp-opt", v); b.onclick = function () { grade(v === q.a, o2, b, v); }; o2.appendChild(b); });
       box.appendChild(o2);
-      var showJ = el("button", "cp-opt", "查看答案解析"); showJ.style.cssText = "width:auto;margin:6px 0 0"; showJ.onclick = function () { fb.innerHTML = analysisHTML(""); }; box.appendChild(showJ);
+      var showJ = el("button", "cp-opt", "查看答案解析"); showJ.style.cssText = "width:auto;margin:6px 0 0"; showJ.onclick = function () { fb.style.display = "block"; fb.innerHTML = analysisHTML(""); }; box.appendChild(showJ);
     } else if (kind === "short") {
       box.appendChild(el("div", "cp-q", esc(q.q)));
       var ta = el("textarea", "ta"); ta.rows = 4; ta.placeholder = "先自己写出关键词/流程，再查看参考答案"; ta.style.cssText = "display:block;width:100%;margin:6px 0";
@@ -1067,6 +1068,7 @@
       var sbar = el("div", "self");
       var show = el("button", "cp-opt", "查看参考答案"); show.style.cssText = "width:auto;margin:4px 6px 4px 0";
       show.onclick = function () {
+        fb.style.display = "block";
         fb.innerHTML = '<b>参考答案</b><div class="anspts" style="margin-top:4px">' + esc(answerText()).replace(/\n/g, "<br>") + "</div>" +
           (q.e ? '<div style="margin-top:4px">' + esc(q.e) + "</div>" : "");
       };
@@ -1081,7 +1083,7 @@
         if (!val) { grade(false, null, null, ""); return; }
         grade(fuzzyMatch(q.a, val), null, null, val);
       };
-      var bs = el("button", "cp-opt", "查看答案解析"); bs.onclick = function () { fb.innerHTML = analysisHTML(""); };
+      var bs = el("button", "cp-opt", "查看答案解析"); bs.onclick = function () { fb.style.display = "block"; fb.innerHTML = analysisHTML(""); };
       box.appendChild(inp); box.appendChild(bc); box.appendChild(bs);
     }
     box.appendChild(fb);
