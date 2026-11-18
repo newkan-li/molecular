@@ -473,3 +473,27 @@ html[data-theme="dark"] .ppt-qa .qa-a{color:#d7dee8;border-color:#8a6d2a}
 
 .ppt-qa .qa-item summary{padding:2px 0}
 .ppt-qa .qa-item+.qa-item{margin-top:8px}
+
+/* chapter mobile layout */
+@media(min-width:761px){
+  .slide.has-qa .body{flex-direction:column}
+  .slide.has-qa .body img{width:100%;max-width:760px}
+}
+@media(max-width:760px){
+  body{overflow-x:hidden}
+  .layout{display:block;max-width:none}
+  aside{position:static;width:auto;height:auto;max-height:38vh;overflow:auto;border-right:0;border-bottom:1px solid var(--line);padding:8px 10px}
+  main{width:100%;max-width:none;padding:12px 10px 64px}
+  .hero{padding:12px 14px;border-radius:9px}
+  .hero h1{font-size:19px;line-height:1.45;overflow-wrap:anywhere}
+  .hero .tag{font-size:12.5px;line-height:1.55}
+  .statsbox{padding:11px 12px;margin:12px 0}
+  .slide{padding:10px 10px;border-radius:9px}
+  .slide .body{gap:9px}
+  .notes-rich{padding:8px 9px}
+  .ppt-qa{padding:8px 9px}
+  .ppt-qa .qa-a{padding-left:6px}
+  #themebar{top:auto;bottom:10px;right:8px;transform:scale(.92);transform-origin:bottom right}
+}
+
+@media(max-width:760px){#themebar{display:none}}
