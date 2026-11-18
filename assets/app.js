@@ -1005,7 +1005,7 @@
     var pick = pickCheckpoint(qByKp, kp);
     var q, kind;
     if (pick) { q = pick.q; kind = pick.kind; }
-    else if (slide && slide.check) { q = slide.check; kind = "mcq"; }
+    else if (slide && slide.check) { q = slide.check; kind = q.kind || "mcq"; }
     else return null;
     var box = el("div", "checkpoint");
     box.appendChild(el("div", "cp-h", "🎯 本页自测（选做，不计入已读）"));
@@ -1041,6 +1041,7 @@
         if (kind === "mcq" && opts) Array.prototype.forEach.call(opts.children, function (b) { b.classList.remove("right", "wrong"); });
         if (kind === "judge" && o2) Array.prototype.forEach.call(o2.children, function (b) { b.classList.remove("right", "wrong"); });
         if (kind === "fill" && inp) { inp.value = ""; inp.classList.remove("right", "wrong"); }
+        if (kind === "short" && box._shortInput) box._shortInput.value = "";
       };
       fb.appendChild(again);
     }
@@ -1054,6 +1055,19 @@
       var o2 = el("div", "cp-opts");
       ["对", "错"].forEach(function (v) { var b = el("button", "cp-opt", v); b.onclick = function () { grade(v === q.a, o2, b, v); }; o2.appendChild(b); });
       box.appendChild(o2);
+    } else if (kind === "short") {
+      box.appendChild(el("div", "cp-q", esc(q.q)));
+      var ta = el("textarea", "ta"); ta.rows = 4; ta.placeholder = "先自己写出关键词/流程，再查看参考答案"; ta.style.cssText = "display:block;width:100%;margin:6px 0";
+      box._shortInput = ta; box.appendChild(ta);
+      var sbar = el("div", "self");
+      var show = el("button", "cp-opt", "查看参考答案"); show.style.cssText = "width:auto;margin:4px 6px 4px 0";
+      show.onclick = function () {
+        fb.innerHTML = '<b>参考答案</b><div class="anspts" style="margin-top:4px">' + esc(answerText()).replace(/\n/g, "<br>") + "</div>" +
+          (q.e ? '<div style="margin-top:4px">' + esc(q.e) + "</div>" : "");
+      };
+      var okb = el("button", "ok", "我会了"); okb.onclick = function () { grade(true, null, null, "自评会"); };
+      var nob = el("button", "no", "还需复习"); nob.onclick = function () { grade(false, null, null, "自评不会"); };
+      sbar.appendChild(show); sbar.appendChild(okb); sbar.appendChild(nob); box.appendChild(sbar);
     } else {
       box.appendChild(el("div", "cp-q", esc(q.q)));
       var inp = el("input", "cp-in"); inp.placeholder = "输入答案";
