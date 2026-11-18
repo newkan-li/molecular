@@ -1073,8 +1073,12 @@
       sbar.appendChild(show); sbar.appendChild(okb); sbar.appendChild(nob); box.appendChild(sbar);
     } else {
       box.appendChild(el("div", "cp-q", esc(q.q)));
-      var inp = el("input", "cp-in"); inp.placeholder = "输入答案";
-      var bc = el("button", "cp-opt", "检查"); bc.onclick = function () { grade(fuzzyMatch(q.a, inp.value), null, null, inp.value); };
+      var inp = el("input", "cp-in"); inp.placeholder = "输入答案（可留空，直接看答案）";
+      var bc = el("button", "cp-opt", "检查"); bc.onclick = function () {
+        var val = String(inp.value || "").trim();
+        if (!val) { grade(false, null, null, ""); return; }
+        grade(fuzzyMatch(q.a, val), null, null, val);
+      };
       var bs = el("button", "cp-opt", "查看答案解析"); bs.onclick = function () { fb.innerHTML = analysisHTML(""); };
       box.appendChild(inp); box.appendChild(bc); box.appendChild(bs);
     }
