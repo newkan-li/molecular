@@ -1356,6 +1356,11 @@
         }
         var cp = renderCheckpoint(cid, key, qByKp, s);
         if (cp) card.appendChild(cp);
+        else if (/^ch0[56]/.test(cid)) {
+          var noCp = el("div", "checkpoint no-check");
+          noCp.innerHTML = '<div class="cp-h">本页暂无独立客观题</div><div class="hint">本章题目统一放在章末“单元测试”，避免用泛泛的“本页讲什么”凑题。</div><a class="navbtn" style="width:auto;display:inline-block;margin-top:6px;text-decoration:none" href="#chapter-test">去做本章单元测试</a>';
+          card.appendChild(noCp);
+        }
         if (s.anim) {
           var aw = el("div", "animwrap");
           aw.appendChild(el("div", "animhead", "🎬 动画演示（在老师原图下方）"));
