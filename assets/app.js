@@ -1004,8 +1004,8 @@
   function renderCheckpoint(cid, kp, qByKp, slide) {
     var pick = pickCheckpoint(qByKp, kp);
     var q, kind;
-    if (pick) { q = pick.q; kind = pick.kind; }
-    else if (slide && slide.check) { q = slide.check; kind = q.kind || "mcq"; }
+    if (slide && slide.check) { q = slide.check; kind = q.kind || "mcq"; }
+    else if (pick) { q = pick.q; kind = pick.kind; }
     else return null;
     var box = el("div", "checkpoint");
     box.appendChild(el("div", "cp-h", "🎯 本页自测（选做，不计入已读）"));
@@ -1270,7 +1270,7 @@
     box.appendChild(el("div", "qa-h", "老师PPT中的问题 · 解答"));
     qa.forEach(function (item, i) {
       var d = el("details", "qa-item");
-      if (i === 0) d.open = true;
+      d.open = true;
       d.innerHTML = '<summary><b>问题 ' + (i + 1) + '：</b>' + esc(item.q) + '</summary><div class="qa-a"><b>解答：</b>' + esc(item.a).replace(/\n/g, "<br>") + '</div>';
       box.appendChild(d);
     });
