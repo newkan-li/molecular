@@ -2,7 +2,7 @@
 (function () {
   var KEY = "molbio_theme";
   var THEMES = [["light", "浅色"], ["sepia", "护眼"], ["dark", "深色"]];
-  function get() { try { return localStorage.getItem(KEY) || "dark"; } catch (e) { return "dark"; } }
+  function get() { try { return localStorage.getItem(KEY) || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"); } catch (e) { return "light"; } }
   function apply(t) {
     document.documentElement.setAttribute("data-theme", t);
     try { localStorage.setItem(KEY, t); } catch (e) { }

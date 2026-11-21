@@ -2306,3 +2306,34 @@
     kpRecord: kpRecord, kpMastery: kpMastery, streakCount: streakCount, taskState: taskState
   };
 })();
+
+/* Mobile drawer navigation (Apple-style compact top bar) */
+(function () {
+  function initMobileNav() {
+    var aside = document.getElementById("sidebar");
+    if (!aside || document.querySelector(".mobile-navbtn")) return;
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "mobile-navbtn";
+    btn.textContent = "目录";
+    btn.setAttribute("aria-label", "打开目录");
+    var mask = document.createElement("div");
+    mask.className = "mobile-navmask";
+    mask.setAttribute("aria-hidden", "true");
+    document.body.appendChild(btn);
+    document.body.appendChild(mask);
+    function close() { document.body.classList.remove("nav-open"); }
+    btn.addEventListener("click", function () {
+      document.body.classList.toggle("nav-open");
+    });
+    mask.addEventListener("click", close);
+    aside.addEventListener("click", function (e) {
+      if (e.target && e.target.tagName === "A") close();
+    });
+    window.addEventListener("resize", function () {
+      if (window.innerWidth > 760) close();
+    });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initMobileNav);
+  else initMobileNav();
+})();
