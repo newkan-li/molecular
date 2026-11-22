@@ -1295,3 +1295,166 @@ html[data-theme="dark"] .analysis-box{background:rgba(255,255,255,.06);border-co
 html[data-theme="dark"] .analysis-kps{background:rgba(255,255,255,.07)}
 html[data-theme="sepia"] .voice-btn,html[data-theme="sepia"] .analyze-btn{background:rgba(255,250,238,.50);color:var(--ink)}
 html[data-theme="sepia"] .analysis-box{background:rgba(255,250,238,.38);border-color:var(--line)}
+
+/* =========================================================
+   macOS 27 Liquid Glass-inspired pass
+   更接近桌面系统窗口：浮动磨砂侧栏、慢速光晕、
+   更强的边缘高光与折射感；保持正文可读性。
+   ========================================================= */
+:root{
+  --mac-blur:38px;
+  --mac-sat:210%;
+  --mac-sheen:linear-gradient(145deg,rgba(255,255,255,.34),rgba(255,255,255,.03) 42%,rgba(255,255,255,.14));
+  --mac-edge:rgba(255,255,255,.78);
+  --mac-shadow:0 30px 80px rgba(31,55,90,.16),0 2px 8px rgba(31,55,90,.06);
+}
+body::before{
+  animation:macGlow 30s ease-in-out infinite alternate;
+  will-change:transform;
+}
+@keyframes macGlow{
+  from{transform:scale(1) translate3d(0,0,0)}
+  to{transform:scale(1.07) translate3d(-1.2%,1.5%,0)}
+}
+@media (prefers-reduced-motion:reduce){body::before{animation:none}}
+
+/* 浮动窗口感：侧栏不再是贴边灰块 */
+aside{
+  top:14px!important;
+  height:calc(100vh - 28px)!important;
+  margin:14px 0 14px 14px;
+  border:1px solid var(--mac-edge)!important;
+  border-radius:26px!important;
+  background:linear-gradient(160deg,rgba(255,255,255,.60),rgba(255,255,255,.34))!important;
+  -webkit-backdrop-filter:blur(var(--mac-blur)) saturate(var(--mac-sat));
+  backdrop-filter:blur(var(--mac-blur)) saturate(var(--mac-sat));
+  box-shadow:var(--mac-shadow),inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(255,255,255,.24),inset 1px 0 0 rgba(255,255,255,.40)!important;
+}
+aside::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:26px;
+  pointer-events:none;
+  background:linear-gradient(125deg,rgba(255,255,255,.20),transparent 30%,transparent 70%,rgba(255,255,255,.10));
+  opacity:.8;
+}
+aside .ttl{padding-top:16px}
+main{padding-left:38px}
+.layout{max-width:1390px}
+
+/* 玻璃面板：更明显的折射高光和边缘 */
+.card,.slide,.q,.checkpoint,.statsbox,.notice,.wb-entry,.gitem,.rev-card,.fc-card,.fc-catbox,.test-wrap,.dcell,.fcp,.fc-recb{
+  background-color:var(--glass)!important;
+  background-image:var(--mac-sheen)!important;
+  border-color:var(--mac-edge)!important;
+  -webkit-backdrop-filter:blur(var(--mac-blur)) saturate(var(--mac-sat));
+  backdrop-filter:blur(var(--mac-blur)) saturate(var(--mac-sat));
+  box-shadow:var(--mac-shadow),inset 0 1px 0 rgba(255,255,255,.92),inset 0 -1px 0 rgba(255,255,255,.22)!important;
+}
+.card,.slide{border-radius:26px!important}
+.card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 36px 90px rgba(31,55,90,.20),inset 0 1px 0 rgba(255,255,255,.95)!important;
+}
+.slide{
+  background-color:rgba(255,255,255,.46)!important;
+}
+.slide .body img{
+  border:1px solid rgba(255,255,255,.82)!important;
+  box-shadow:0 24px 60px rgba(31,55,90,.16),0 2px 8px rgba(31,55,90,.06);
+}
+.points,.fignote,.previewbox,.notes-rich{
+  background-color:rgba(255,255,255,.30)!important;
+  background-image:var(--mac-sheen)!important;
+  border-color:rgba(255,255,255,.62)!important;
+  -webkit-backdrop-filter:blur(24px) saturate(190%);
+  backdrop-filter:blur(24px) saturate(190%);
+}
+.hero{
+  border-radius:26px!important;
+  background:linear-gradient(135deg,rgba(238,247,255,.78),rgba(255,255,255,.42))!important;
+  border:1px solid var(--mac-edge)!important;
+  -webkit-backdrop-filter:blur(var(--mac-blur)) saturate(var(--mac-sat));
+  backdrop-filter:blur(var(--mac-blur)) saturate(var(--mac-sat));
+  box-shadow:0 24px 70px rgba(0,113,227,.12),inset 0 1px 0 rgba(255,255,255,.96)!important;
+}
+
+/* 按钮与控制更接近 macOS 控件 */
+.navbtn,.navrow .navbtn,.mobile-navbtn,.mopt,.checkpoint .cp-opt,.rev-opt,.fc-chip,.fc-rate button,.vtab,.self button,.causes button,.hwbar button,.voice-btn,.analyze-btn{
+  background-color:rgba(255,255,255,.46)!important;
+  background-image:linear-gradient(145deg,rgba(255,255,255,.38),rgba(255,255,255,.06) 55%,rgba(255,255,255,.18))!important;
+  border-color:rgba(255,255,255,.74)!important;
+  box-shadow:0 5px 16px rgba(31,55,90,.07),inset 0 1px 0 rgba(255,255,255,.92),inset 0 -1px 0 rgba(255,255,255,.20)!important;
+  -webkit-backdrop-filter:blur(22px) saturate(200%);
+  backdrop-filter:blur(22px) saturate(200%);
+}
+.navbtn:hover,.navrow .navbtn:hover,.voice-btn:hover,.analyze-btn:hover,.mopt:hover,.checkpoint .cp-opt:hover,.rev-opt:hover{
+  background-color:rgba(255,255,255,.64)!important;
+  border-color:rgba(255,255,255,.88)!important;
+}
+#themebar{
+  border-radius:999px!important;
+  background:linear-gradient(160deg,rgba(255,255,255,.58),rgba(255,255,255,.30))!important;
+  border-color:rgba(255,255,255,.80)!important;
+  -webkit-backdrop-filter:blur(30px) saturate(220%);
+  backdrop-filter:blur(30px) saturate(220%);
+  box-shadow:0 12px 36px rgba(31,55,90,.16),inset 0 1px 0 rgba(255,255,255,.96)!important;
+}
+#themebar button.on{background:rgba(0,113,227,.82)!important;color:#fff!important;box-shadow:0 4px 14px rgba(0,113,227,.28),inset 0 1px 0 rgba(255,255,255,.28)!important}
+
+/* 输入框：内层玻璃 */
+input.ans,textarea.ta,.checkpoint .cp-in,.planrow input[type=date],.planrow input[type=number],.confnote{
+  background-color:rgba(255,255,255,.40)!important;
+  background-image:linear-gradient(180deg,rgba(255,255,255,.26),rgba(255,255,255,.08))!important;
+  border-color:rgba(255,255,255,.70)!important;
+  box-shadow:inset 0 1px 2px rgba(31,55,90,.05),inset 0 1px 0 rgba(255,255,255,.90)!important;
+}
+.checkpoint{
+  background-color:rgba(255,255,255,.34)!important;
+  background-image:var(--mac-sheen)!important;
+}
+.analysis-box{
+  border-color:rgba(255,255,255,.68)!important;
+  background-color:rgba(255,255,255,.36)!important;
+  background-image:var(--mac-sheen)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 12px 30px rgba(31,55,90,.08);
+}
+::selection{background:rgba(0,113,227,.22)}
+
+/* 深色 macOS 27 玻璃 */
+html[data-theme="dark"]{
+  --mac-sheen:linear-gradient(145deg,rgba(255,255,255,.10),rgba(255,255,255,.015) 42%,rgba(255,255,255,.045));
+  --mac-edge:rgba(255,255,255,.18);
+  --mac-shadow:0 30px 80px rgba(0,0,0,.44),0 2px 8px rgba(0,0,0,.28);
+}
+html[data-theme="dark"] aside{
+  background:linear-gradient(160deg,rgba(28,28,30,.66),rgba(18,18,20,.44))!important;
+  border-color:rgba(255,255,255,.16)!important;
+  box-shadow:var(--mac-shadow),inset 0 1px 0 rgba(255,255,255,.18),inset 0 -1px 0 rgba(255,255,255,.04)!important;
+}
+html[data-theme="dark"] .card,html[data-theme="dark"] .slide,html[data-theme="dark"] .q,html[data-theme="dark"] .checkpoint,html[data-theme="dark"] .statsbox,html[data-theme="dark"] .notice,html[data-theme="dark"] .wb-entry,html[data-theme="dark"] .gitem,html[data-theme="dark"] .rev-card,html[data-theme="dark"] .fc-card,html[data-theme="dark"] .fc-catbox,html[data-theme="dark"] .test-wrap,html[data-theme="dark"] .dcell,html[data-theme="dark"] .fcp,html[data-theme="dark"] .fc-recb{
+  background-color:var(--glass)!important;
+  background-image:var(--mac-sheen)!important;
+  border-color:var(--mac-edge)!important;
+  box-shadow:var(--mac-shadow),inset 0 1px 0 rgba(255,255,255,.16),inset 0 -1px 0 rgba(255,255,255,.035)!important;
+}
+html[data-theme="dark"] .slide{background-color:rgba(24,24,26,.52)!important}
+html[data-theme="dark"] .points,html[data-theme="dark"] .fignote,html[data-theme="dark"] .previewbox,html[data-theme="dark"] .notes-rich{background-color:rgba(255,255,255,.045)!important;background-image:var(--mac-sheen)!important;border-color:rgba(255,255,255,.10)!important}
+html[data-theme="dark"] .hero{background:linear-gradient(135deg,rgba(10,132,255,.15),rgba(28,28,30,.50))!important;border-color:rgba(255,255,255,.15)!important;box-shadow:0 24px 70px rgba(0,0,0,.36),inset 0 1px 0 rgba(255,255,255,.14)!important}
+html[data-theme="dark"] .navbtn,html[data-theme="dark"] .navrow .navbtn,html[data-theme="dark"] .mobile-navbtn,html[data-theme="dark"] .mopt,html[data-theme="dark"] .checkpoint .cp-opt,html[data-theme="dark"] .rev-opt,html[data-theme="dark"] .fc-chip,html[data-theme="dark"] .fc-rate button,html[data-theme="dark"] .vtab,html[data-theme="dark"] .self button,html[data-theme="dark"] .causes button,html[data-theme="dark"] .hwbar button,html[data-theme="dark"] .voice-btn,html[data-theme="dark"] .analyze-btn{
+  background-color:rgba(255,255,255,.07)!important;
+  background-image:var(--mac-sheen)!important;
+  border-color:rgba(255,255,255,.15)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 5px 16px rgba(0,0,0,.18)!important;
+}
+html[data-theme="dark"] #themebar{background:linear-gradient(160deg,rgba(44,44,46,.60),rgba(28,28,30,.36))!important;border-color:rgba(255,255,255,.16)!important;box-shadow:0 12px 36px rgba(0,0,0,.40),inset 0 1px 0 rgba(255,255,255,.14)!important}
+html[data-theme="dark"] input.ans,html[data-theme="dark"] textarea.ta,html[data-theme="dark"] .checkpoint .cp-in,html[data-theme="dark"] .planrow input,html[data-theme="dark"] .confnote{background-color:rgba(255,255,255,.055)!important;background-image:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.015))!important;border-color:rgba(255,255,255,.13)!important;box-shadow:inset 0 1px 2px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.08)!important}
+html[data-theme="dark"] .analysis-box{background-color:rgba(255,255,255,.05)!important;background-image:var(--mac-sheen)!important;border-color:rgba(255,255,255,.12)!important}
+html[data-theme="dark"] .mobile-navmask{background:rgba(0,0,0,.38);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+
+/* 移动端取消浮动侧栏，保留抽屉 */
+@media(max-width:760px){
+  aside{top:0!important;height:100vh!important;margin:0!important;border-radius:0 26px 26px 0!important}
+  main{padding-left:14px}
+}
