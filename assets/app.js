@@ -550,11 +550,152 @@
     if (!ok) srsRate(q.id, 0); else if (srsGet(q.id)) srsRate(q.id, 2);
   }
 
+  /* ================= 语音作答 + 简答/分析自查 ================= */
+  function speechRecognitionCtor() {
+    return window.SpeechRecognition || window.webkitSpeechRecognition || null;
+  }
+  function normAnswer(s) {
+    return String(s || "").toLowerCase()
+      .replace(/[，,、;；\/|]+/g, " ")
+      .replace(/[（）()【】\[\]{}“”"'’·:：.。\-—_~!！?？]/g, " ")
+      .replace(/\s+/g, " ").trim();
+  }
+  function answerBigrams(s) {
+    s = normAnswer(s).replace(/\s+/g, "");
+    var set = {};
+    for (var i = 0; i < s.length - 1; i++) set[s.substr(i, 2)] = 1;
+    return set;
+  }
+  function answerSim(a, b) {
+    var A = answerBigrams(a), B = answerBigrams(b), na = 0, nb = 0, hit = 0;
+    for (var k in A) na++;
+    for (var j in B) { nb++; if (A[j]) hit++; }
+    return (na && nb) ? hit / Math.sqrt(na * nb) : 0;
+  }
+  function answerReference(q, kind) {
+    return String(kind === "term" ? (q.def || q.a) : (kind === "calc" ? (q.steps || q.a) : q.a) || "");
+  }
+  function answerPoints(q, kind) {
+    var ref = answerReference(q, kind);
+    var pts = ref.split(/[。；;\n]+/).map(function (x) { return x.trim(); }).filter(function (x) { return x.length >= 6; });
+    var out = [];
+    pts.forEach(function (x) {
+      if (x.length > 28) x.split(/[，,：:]/).forEach(function (y) { y = y.replace(/^[①②③④⑤⑥⑦⑧⑨⑩\s]+/, "").trim(); if (y.length >= 5) out.push(y); });
+      else out.push(x.replace(/^[①②③④⑤⑥⑦⑧⑨⑩\s]+/, ""));
+    });
+    return out.slice(0, 14);
+  }
+  function answerKeys(point) {
+    var chunks = String(point).split(/[、，,；;：:\/\s]+/).map(function (x) { return x.trim(); }).filter(Boolean);
+    var out = [];
+    chunks.forEach(function (x) {
+      x = x.replace(/^[①②③④⑤⑥⑦⑧⑨⑩]+/, "").replace(/^(定义|机制|过程|特点|分类|意义|作用|举例|应用|结论)\s*/, "");
+      if (x.length >= 2 && x.length <= 18) out.push(x);
+    });
+    return out;
+  }
+  function answerAnalysis(q, kind, text) {
+    var user = normAnswer(text);
+    if (!user) return { empty: true };
+    var pts = answerPoints(q, kind), matched = [], missing = [], hits = [];
+    pts.forEach(function (p) {
+      var hit = false;
+      answerKeys(p).forEach(function (k) {
+        var nk = normAnswer(k);
+        if (nk.length >= 2 && user.indexOf(nk) >= 0) { hit = true; if (hits.indexOf(k) < 0) hits.push(k); }
+      });
+      if (!hit && answerSim(p, text) >= 0.22) hit = true;
+      (hit ? matched : missing).push(p);
+    });
+    var total = pts.length || 1, pct = Math.round(matched.length * 100 / total);
+    var lengthNote = user.length < 12 ? "答案偏短，建议补充定义、机制或例子。" : (user.length > 500 ? "内容较长，注意分点作答。" : "");
+    return { empty: false, matched: matched, missing: missing, hits: hits, pct: pct, total: total, lengthNote: lengthNote, kps: String(q.kps || "").trim() };
+  }
+  function buildVoiceBar(cid, q, getVal, setVal, onDone) {
+    var row = el("div", "voice-row");
+    var SR = speechRecognitionCtor();
+    var btn = el("button", "voice-btn", SR ? "🎙 语音输入" : "🎙 语音输入（浏览器不支持）");
+    btn.type = "button";
+    if (!SR) { btn.disabled = true; btn.title = "建议使用 Chrome / Edge，并通过 https 或 localhost 打开"; }
+    var status = el("span", "voice-status", "");
+    row.appendChild(btn); row.appendChild(status);
+    if (!SR) return row;
+    var rec = null, base = "", spoken = "", listening = false;
+    function save() { saveText(cid, q.id, getVal()); }
+    function stop() { listening = false; btn.classList.remove("on"); btn.textContent = "🎙 语音输入"; status.textContent = ""; try { if (rec) rec.stop(); } catch (e) { } }
+    btn.onclick = function () {
+      if (listening) { stop(); return; }
+      try {
+        rec = new SR(); rec.lang = "zh-CN"; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
+        base = String(getVal() || "").trim(); spoken = "";
+        listening = true; btn.classList.add("on"); btn.textContent = "🔴 正在听…"; status.textContent = "请直接说答案，说完自动转文字";
+        rec.onresult = function (ev) {
+          var finalText = "", interim = "";
+          for (var i = ev.resultIndex; i < ev.results.length; i++) {
+            var r = ev.results[i];
+            if (r.isFinal) finalText += r[0].transcript; else interim += r[0].transcript;
+          }
+          if (finalText) spoken += finalText;
+          setVal((base ? base + " " : "") + spoken + (interim || ""));
+          save();
+        };
+        rec.onerror = function (ev) {
+          save();
+          status.textContent = ev.error === "not-allowed" ? "麦克风权限被拒绝" : "没有识别到清晰语音，请重试";
+        };
+        rec.onend = function () {
+          listening = false; btn.classList.remove("on"); btn.textContent = "🎙 语音输入"; save();
+          if (String(getVal() || "").trim()) { status.textContent = "语音已转成文字并保存"; if (onDone) onDone(); }
+          else status.textContent = "未识别到内容";
+        };
+        rec.start();
+      } catch (e) {
+        listening = false; btn.classList.remove("on"); btn.textContent = "🎙 语音输入";
+        status.textContent = "无法启动语音识别，请检查浏览器权限";
+      }
+    };
+    return row;
+  }
+  function answerTools(cid, q, kind, ta) {
+    var wrap = el("div", "answer-tools");
+    var analyzeBtn = el("button", "analyze-btn", "🔎 分析我的答案");
+    analyzeBtn.type = "button";
+    var row = buildVoiceBar(cid, q, function () { return ta.value; }, function (v) {
+      ta.value = v; saveText(cid, q.id, v); ta.dispatchEvent(new Event("input", { bubbles: true }));
+    }, function () { render(); });
+    row.appendChild(analyzeBtn); wrap.appendChild(row);
+    var out = el("div", "analysis-box", ""); out.style.display = "none"; wrap.appendChild(out);
+    function render() {
+      var a = answerAnalysis(q, kind, ta.value);
+      out.style.display = "block";
+      if (a.empty) { out.innerHTML = '<div class="analysis-head">先写或说出你的答案，再点分析。</div>'; return; }
+      var cls = a.pct >= 75 ? "good" : a.pct >= 45 ? "mid" : "low";
+      var label = a.pct >= 75 ? "要点较完整" : a.pct >= 45 ? "覆盖了一部分" : "缺口较大";
+      var h = '<div class="analysis-head ' + cls + '">' + label + ' · 参考要点覆盖 ' + a.matched.length + '/' + a.total + '（约 ' + a.pct + '%）</div>';
+      if (a.matched.length) h += '<div class="analysis-row ok"><b>已覆盖：</b>' + a.matched.map(esc).join("；") + '</div>';
+      if (a.missing.length) h += '<div class="analysis-row miss"><b>可能遗漏：</b>' + a.missing.map(esc).join("；") + '</div>';
+      if (a.hits.length) h += '<div class="analysis-hits"><b>命中关键词：</b>' + a.hits.slice(0, 8).map(esc).join("、") + '</div>';
+      if (a.kps) h += '<div class="analysis-kps"><b>踩分点：</b>' + esc(a.kps) + '</div>';
+      if (a.lengthNote) h += '<div class="analysis-note">' + esc(a.lengthNote) + '</div>';
+      h += '<div class="analysis-disclaimer">本地规则自查：按关键词和参考要点匹配，不做真正语义判分，仅供复习参考。</div>';
+      out.innerHTML = h;
+    }
+    analyzeBtn.onclick = render;
+    return wrap;
+  }
+
   /* ================= fill ================= */
   function renderFill(cid, q, idx) {
     var box = el("div", "q"); box.id = "q_" + q.id;
     box.appendChild(el("p", "qq", "第 " + idx + " 题 " + esc(q.q) + kpJump(q)));
-    var inp = el("input", "ans"); inp.placeholder = "输入答案（多个空用逗号分隔）"; box.appendChild(inp);
+    var inp = el("input", "ans"); inp.placeholder = "输入答案（多个空用逗号分隔）";
+    inp.value = textStore(cid)[q.id] || "";
+    inp.addEventListener("input", function () { saveText(cid, q.id, inp.value); });
+    box.appendChild(inp);
+    var voice = buildVoiceBar(cid, q, function () { return inp.value; }, function (v) {
+      inp.value = v; saveText(cid, q.id, v); inp.dispatchEvent(new Event("input", { bubbles: true }));
+    }, null);
+    box.appendChild(voice);
     var bar = el("div", "self");
     var bChk = el("button", "ok", "检查"), bShow = el("button", "", "显示答案");
     bar.appendChild(bChk); bar.appendChild(bShow); box.appendChild(bar);
@@ -567,6 +708,7 @@
 
     box._check = function () {
       var ok = fuzzyMatch(q.a, inp.value);
+      saveText(cid, q.id, inp.value);
       var store = fillStore(cid); var rec = store[q.id] || { ok: 0, miss: 0 };
       rec.last = inp.value;
       if (rec.first === undefined) rec.first = ok;
@@ -621,6 +763,7 @@
     ta.value = textStore(cid)[q.id] || "";
     ta.addEventListener("input", function () { saveText(cid, q.id, ta.value); });
     box.appendChild(ta);
+    box.appendChild(answerTools(cid, q, kind, ta));
     var tbar = el("div", "self");
     var bClr = el("button", "", "清空输入");
     bClr.onclick = function () { if (confirm("清空已输入的答案？")) { ta.value = ""; saveText(cid, q.id, ""); } };
